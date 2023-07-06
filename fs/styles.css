@@ -1,0 +1,120 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.display {
+  width: 80%;
+  max-width: 300px;
+  height: 50px;
+  border: 1px solid black;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 24px;
+}
+
+.keypad-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  outline: 1px solid black;
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.keypad button {
+  width: 60px;
+  height: 60px;
+  font-size: 18px;
+  margin-bottom: 10px;
+  touch-action: manipulation;
+}
+
+.macro-pad {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  outline: 1px solid black;
+  padding: 10px;
+}
+
+.macro-pad button {
+  width: 60px;
+  height: 60px;
+  font-size: 18px;
+  margin-bottom: 10px;
+  touch-action: manipulation;
+}
+
+/* Media query for devices with DPR 2 */
+@media only screen and (min-device-pixel-ratio: 2) and (max-width: 600px) {
+  .display {
+    width: 90%;
+    max-width: none;
+    font-size: 20px; /* Adjust the font-size value as needed */
+  }
+
+  .keypad button, .macro-pad button {
+    width: 50px; /* Adjust the width value as needed */
+    height: 50px; /* Adjust the height value as needed */
+    font-size: 16px; /* Adjust the font-size value as needed */
+    margin-bottom: 5px; /* Adjust the margin-bottom value as needed */
+  }
+}
+
+/* Media query for devices with DPR 3 */
+@media only screen and (min-device-pixel-ratio: 3) and (max-width: 600px) {
+  .display {
+    width: 90%;
+    max-width: none;
+    font-size: 20px; /* Adjust the font-size value as needed */
+  }
+
+  .keypad button, .macro-pad button {
+    width: 70px; /* Adjust the width value as needed */
+    height: 70px; /* Adjust the height value as needed */
+    font-size: 20px; /* Adjust the font-size value as needed */
+    margin-bottom: 8px; /* Adjust the margin-bottom value as needed */
+  }
+}
+
+/* Default media query for other devices */
+@media only screen and (max-width: 600px) {
+  .container {
+    margin-top: 20px; /* Adjust the margin-top value as needed */
+  }
+
+  .display {
+    width: 90%;
+    max-width: none;
+    font-size: 20px; /* Adjust the font-size value as needed */
+  }
+
+  .keypad-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .keypad, .macro-pad {
+    width: 90%;
+    max-width: none;
+    margin-right: 0;
+  }
+
+  .keypad button, .macro-pad button {
+    width: 50px; /* Adjust the width value as needed */
+    height: 50px; /* Adjust the height value as needed */
+    font-size: 16px; /* Adjust the font-size value as needed */
+    margin-bottom: 5px; /* Adjust the margin-bottom value as needed */
+  }
+
+  .macro-pad {
+    margin-top: 10px; /* Adjust the margin-top value as needed */
+  }
+}

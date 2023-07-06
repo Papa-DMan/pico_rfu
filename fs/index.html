@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Keypad Example</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="display"></div>
+    <div class="keypad-container">
+      <div class="keypad">
+        <button onclick="appendKey('1')">1</button>
+        <button onclick="appendKey('2')">2</button>
+        <button onclick="appendKey('3')">3</button>
+        <button onclick="appendKey('4')">4</button>
+        <button onclick="appendKey('5')">5</button>
+        <button onclick="appendKey('6')">6</button>
+        <button onclick="appendKey('7')">7</button>
+        <button onclick="appendKey('8')">8</button>
+        <button onclick="appendKey('9')">9</button>
+        <button onclick="appendKey('-')">-</button>
+        <button onclick="appendKey('0')">0</button>
+        <button onclick="appendKey('+')">+</button>
+        <button onclick="clearDisplay()">Clear</button>
+        <button onclick=""></button>
+        <button onclick="sendKeys()">Enter</button>
+      </div>
+      <div class="macro-pad">
+        <button>Chan</button>
+        <button>Dim</button>
+        <button onclick="appendKey(' Through ')">Thru</button>
+        <button onclick="appendKey(' AT ')">At</button>
+        <button onclick="appendKey(' AND ')">And</button>
+        <button onclick="appendKey('FULL')">Full</button>
+        <button>Excpt</button>
+        <button>Level</button>
+        <button onclick="release()">Rel</button>
+        <button>Solo</button>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+    "cmake.sourceDirectory": "/mnt/c/Users/mahan/Documents/git/etc_rfu_pico",
+    "cmake.statusbar.advanced": {
+        "debug:": {
+            "visibility" : "hidden"
+        },
+        "launch:": {
+            "visibility" : "hidden"
+        },
+        "build:": {
+            "visibility" : "default"
+        },
+        "buildTarget:": {
+            "visibility" : "default"
+        },
+    },
+    "cmake.buildBeforeRun": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+}

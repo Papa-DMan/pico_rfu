@@ -1,0 +1,51 @@
+#ifndef _LWIPOPTS_H
+#define _LWIPOPTS_H
+
+// Generally you would define your own explicit list of lwIP options
+// (see https://www.nongnu.org/lwip/2_1_x/group__lwip__opts.html)
+//
+// This example uses a common include to avoid repetition
+
+#define NO_SYS 0
+#define LWIP_SOCKET 1
+#define LWIP_IGMP 1
+#define PICO_CYW43_ARCH_FREERTOS 1
+
+
+#include "lwipopts_examples_common.h"
+
+#if !NO_SYS
+#define TCPIP_THREAD_STACKSIZE 1024
+#define DEFAULT_THREAD_STACKSIZE 1024
+#define DEFAULT_RAW_RECVMBOX_SIZE 8
+#define TCPIP_MBOX_SIZE 8
+#define DEFAULT_TCP_RECVMBOX_SIZE 8
+#define DEFAULT_ACCEPTMBOX_SIZE 8
+#define DEFAULT_UDP_RECVMBOX_SIZE 8
+#define LWIP_TIMEVAL_PRIVATE 0
+#ifndef LWIP_AUTOIP
+#define LWIP_AUTOIP 1
+#endif
+#define LWIP_MDNS_RESPONDER 1   
+#define LWIP_NUM_NETIF_CLIENT_DATA 2
+#define LWIP_AUTOIP 1
+
+// not necessary, can be done either way
+#define LWIP_TCPIP_CORE_LOCKING_INPUT 1
+
+// ping_thread sets socket receive timeout, so enable this feature
+#define LWIP_SO_RCVTIMEO 1
+
+/*******************************************/
+/*               HTTPD CONF                */
+/*******************************************/
+
+#define 	HTTPD_USE_CUSTOM_FSDATA   1
+#define     LWIP_HTTPD_SUPPORT_POST   1
+#define     LWIP_HTTPD_DYNAMIC_HEADERS 1
+
+
+#endif
+
+
+#endif

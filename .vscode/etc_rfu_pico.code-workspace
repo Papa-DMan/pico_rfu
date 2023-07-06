@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../pico-sdk"
+		}
+	],
+	"settings": {
+		"cmake.configureOnEdit": false,
+		"cmake.configureOnOpen": true,
+		"cortex-debug.variableUseNaturalFormat": true,
+		"files.associations": {
+			"*.ino": "cpp",
+			"utility": "cpp",
+			"array": "cpp",
+			"deque": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp",
+			"vector": "cpp",
+			"string_view": "cpp",
+			"initializer_list": "cpp",
+			"ranges": "cpp"
+		},
+	}
+}
