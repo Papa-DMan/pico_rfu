@@ -22,6 +22,7 @@
 #include "lwip/apps/mdns.h"
 //#include "fsdata.h"
 #include "dhcpserver.h"
+#include "dnsserver.h"
 #include "http_state.h"
 #include "core_json.h"
 #include <cstring>
@@ -33,6 +34,7 @@
 
 static ip4_addr_t gw, mask;
 static dhcp_server_t dhcp;
+static dns_server_t dns;
 static QueueHandle_t tcpQueue = NULL;
 static QueueHandle_t dmxQueue = NULL;
 static std::set<uint16_t> captured;
@@ -191,6 +193,9 @@ void wifi_init_task(void *) {
     netif_set_addr(netif_default, &gw, &mask, &gw);
 
     dhcp_server_init(&dhcp, &gw, &mask);
+    dns_server_init(&dns, &gw);
+    netif_set_hostname(netif_default, "rfunit");
+
 
     //mdns_resp_init();
     //mdns_resp_add_netif(netif_default, "rfunit");
