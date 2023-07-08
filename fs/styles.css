@@ -13,6 +13,7 @@
   margin-bottom: 10px;
   padding: 10px;
   font-size: 24px;
+  background-color: #f2f2f2;
 }
 
 .keypad-container {
@@ -27,14 +28,25 @@
   outline: 1px solid black;
   padding: 10px;
   margin-right: 10px;
+  column-gap: 5px; /* Add spacing between the columns */
 }
 
-.keypad button {
+.keypad button,
+.macro-pad button {
   width: 60px;
   height: 60px;
   font-size: 18px;
   margin-bottom: 10px;
   touch-action: manipulation;
+  background-color: #e6e6e6;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.keypad button:hover,
+.macro-pad button:hover {
+  background-color: #d9d9d9;
 }
 
 .macro-pad {
@@ -42,58 +54,19 @@
   grid-template-columns: repeat(2, 1fr);
   outline: 1px solid black;
   padding: 10px;
+  column-gap: 5px; /* Add spacing between the columns */
 }
 
-.macro-pad button {
-  width: 60px;
-  height: 60px;
-  font-size: 18px;
-  margin-bottom: 10px;
-  touch-action: manipulation;
-}
-
-/* Media query for devices with DPR 2 */
-@media only screen and (min-device-pixel-ratio: 2) and (max-width: 600px) {
-  .display {
-    width: 90%;
-    max-width: none;
-    font-size: 20px; /* Adjust the font-size value as needed */
-  }
-
-  .keypad button, .macro-pad button {
-    width: 50px; /* Adjust the width value as needed */
-    height: 50px; /* Adjust the height value as needed */
-    font-size: 16px; /* Adjust the font-size value as needed */
-    margin-bottom: 5px; /* Adjust the margin-bottom value as needed */
-  }
-}
-
-/* Media query for devices with DPR 3 */
-@media only screen and (min-device-pixel-ratio: 3) and (max-width: 600px) {
-  .display {
-    width: 90%;
-    max-width: none;
-    font-size: 20px; /* Adjust the font-size value as needed */
-  }
-
-  .keypad button, .macro-pad button {
-    width: 70px; /* Adjust the width value as needed */
-    height: 70px; /* Adjust the height value as needed */
-    font-size: 20px; /* Adjust the font-size value as needed */
-    margin-bottom: 8px; /* Adjust the margin-bottom value as needed */
-  }
-}
-
-/* Default media query for other devices */
+/* Media queries */
 @media only screen and (max-width: 600px) {
   .container {
-    margin-top: 20px; /* Adjust the margin-top value as needed */
+    margin-top: 20px;
   }
 
   .display {
     width: 90%;
     max-width: none;
-    font-size: 20px; /* Adjust the font-size value as needed */
+    font-size: 20px;
   }
 
   .keypad-container {
@@ -101,20 +74,23 @@
     align-items: center;
   }
 
-  .keypad, .macro-pad {
+  .keypad,
+  .macro-pad {
     width: 90%;
     max-width: none;
     margin-right: 0;
+    column-gap: 4px; /* Add spacing between the columns */
   }
 
-  .keypad button, .macro-pad button {
-    width: 50px; /* Adjust the width value as needed */
-    height: 50px; /* Adjust the height value as needed */
-    font-size: 16px; /* Adjust the font-size value as needed */
-    margin-bottom: 5px; /* Adjust the margin-bottom value as needed */
+  .keypad button,
+  .macro-pad button {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+    margin-bottom: 5px;
   }
 
   .macro-pad {
-    margin-top: 10px; /* Adjust the margin-top value as needed */
+    margin-top: 10px;
   }
 }

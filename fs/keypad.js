@@ -14,7 +14,7 @@ if (!passwordCookie) {
 
 function appendKey(key) {
   // If the user presses the full button twice in a row, send the keys
-  if (key === 'full' && keyBuffer.endsWith('full')) {
+  if (key === 'FULL' && keyBuffer.endsWith('FULL')) {
     sendKeys();
     return;
   }

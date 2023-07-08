@@ -17,6 +17,14 @@ def handle_auth():
         return "Password verified"
     return "Incorrect password", 401
 
+@app.route("/api/keys", methods=["POST"])
+def handle_keys():
+    # Get the password from the request body
+    keys = request.json.get("keys")
+    return "Keys verified", 200
+    
+
+
 # Define a route to serve static files from the "fs" folder
 @app.route("/<path:filename>")
 def serve_static(filename):
