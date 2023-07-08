@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 set(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/../pico-sdk)
 set(PICO_BOARD pico_w)
+set(MAKE_EXPORT_COMPILE_COMMANDS 1)
 
 include(pico_sdk_import.cmake)
 

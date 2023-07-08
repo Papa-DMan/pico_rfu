@@ -305,7 +305,6 @@ void wifi_init_task(void *) {
 int main() {
     stdio_init_all();
     timer_hw->dbgpause = 0;
-
     tcpQueue = xQueueCreate(5, 2048);
 
     xTaskCreate(wifi_init_task, "wifi_init_task", 1024, NULL, 1, NULL);

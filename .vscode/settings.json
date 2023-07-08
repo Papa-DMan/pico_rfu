@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "/mnt/c/Users/mahan/Documents/git/etc_rfu_pico",
+    "cmake.sourceDirectory": "/Users/mahaneyd/Documents/GitHub/pico_rfu",
     "cmake.statusbar.advanced": {
         "debug:": {
             "visibility" : "hidden"
