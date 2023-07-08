@@ -31,6 +31,7 @@
 #define NUMDMX 1
 #define SSID            "RemoteFocus"
 #define PASSWORD        "12345678"
+#define AP_MODE         true
 
 static ip4_addr_t gw, mask;
 static dhcp_server_t dhcp;
@@ -76,7 +77,11 @@ void dmx_task(void *pvParameters) {
     }
 }
 
-
+/**
+ * @brief Callback function for the httpd server receiving a POST request
+ * @post The httpdreq vairable is set to the appropriate value
+ * @return ERR_OK if the request is valid, ERR_VAL otherwise
+*/
 err_t httpd_post_begin(void * connection, const char *uri, const char * http_request, u16_t http_request_len, int content_len, char * response_uri, u16_t response_uri_len, u8_t *post_auto_wnd) {
     if (strncmp(uri, "/api", 4) == 0) {
         if (strncmp(uri, "/api/auth", 9) == 0) {
@@ -93,6 +98,12 @@ err_t httpd_post_begin(void * connection, const char *uri, const char * http_req
     return ERR_VAL;
 }
 
+/**
+ * @brief Dechiphers the key string and generates a DMX frame to be sent
+ * @param keys The key string buffer to be parsed
+ * @param keysLength The length of the key string
+ * @post The dmxQueue is populated with the DMX frame to be sent
+*/
 void processKeys(char* keys, size_t keysLength) {
 
     char* token;
@@ -159,6 +170,12 @@ void processKeys(char* keys, size_t keysLength) {
 
 }
 
+/**
+ * @brief Parses/verifies the api/keys request and calls processKeys
+ * @param json The json buffer to be parsed
+ * @param json_len The length of the json buffer
+ * @post The dmxQueue is populated with the DMX frame to be sent
+*/
 void parseAPIKeysRequest(char* json, int json_len) {
     char *value;
     size_t value_len;
@@ -171,6 +188,14 @@ void parseAPIKeysRequest(char* json, int json_len) {
         return;
     processKeys(value, value_len);
 }
+/**
+ * @brief Parses/verifies the api/auth request and returns the appropriate response code
+ * @todo Implement encryption via mbedtls
+ * @param json The json buffer to be parsed
+ * @param json_len The length of the json buffer
+ * @return 200 if the password is correct, 400 otherwise
+ * 
+*/
 uint16_t parseAPIAuthRequest(char* json, int json_len) {
     char* value;
     size_t value_len;
@@ -187,6 +212,15 @@ uint16_t parseAPIAuthRequest(char* json, int json_len) {
     return 400;
 }
 
+
+/**
+ * @brief Called when data is received from the client
+ * @post The response header is written to the connection and the packed buffer is freed
+ * @param connection The connection pointer to the client
+ * @param p The packed buffer containing the data (NEEDS TO BE FREED)
+ * @post The response header is written to the connection and the packed buffer is freed
+ * @return ERR_OK
+*/
 err_t httpd_post_receive_data(void* connection, struct pbuf *p) {
     char* data = (char*)p->payload;
     switch (httpdreq) {
@@ -213,6 +247,14 @@ err_t httpd_post_receive_data(void* connection, struct pbuf *p) {
     return ERR_OK;
 }
 
+/**
+ * @brief Called when the client has finished sending data
+ * @post The response header is written to the connection and the connection is closed
+ * @param connection The connection pointer to the client
+ * @param response_uri The buffer to write the response uri to
+ * @param response_uri_len The length of the response uri buffer
+ * 
+*/
 void httpd_post_finished(void* connection, char* response_uri, u16_t response_uri_len) {
     http_state *hs = (http_state*)connection;
     snprintf(hs->hdrs[1], hs->hdr_content_len[1], "Content-type: text/html");
@@ -221,23 +263,31 @@ void httpd_post_finished(void* connection, char* response_uri, u16_t response_ur
 }
 
 void wifi_init_task(void *) {
-    if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)) {                      //init wifi module with country code
+    if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)) {                                      //init wifi module with country code
         //printf("CYW43 initalization failed\n");
     }
-    cyw43_wifi_pm(&cyw43_state, 0xA11140);                                      //disable powersave mode
-    cyw43_arch_enable_ap_mode(SSID, PASSWORD, CYW43_AUTH_WPA2_AES_PSK);         //enable AP mode
+    cyw43_wifi_pm(&cyw43_state, 0xA11140);                                                      //disable powersave mode
+    #if AP_MODE
+    cyw43_arch_enable_ap_mode(SSID, PASSWORD, CYW43_AUTH_WPA2_AES_PSK);                         //enable AP mode
 
-    
-    IP_ADDR4(ip_2_ip4(&gw), 192, 168, 4, 1);
-    IP_ADDR4(ip_2_ip4(&mask), 255, 255, 255, 0);
-
-    netif_set_addr(netif_default, &gw, &mask, &gw);
-
-    dhcp_server_init(&dhcp, &gw, &mask);
-    dns_server_init(&dns, &gw);
-    netif_set_hostname(netif_default, "rfunit");
-
-
+    IP_ADDR4(ip_2_ip4(&gw), 192, 168, 4, 1);                                                    //set IP address                           
+    IP_ADDR4(ip_2_ip4(&mask), 255, 255, 255, 0);                                                //set netmask       
+    netif_set_addr(netif_default, &gw, &mask, &gw);                                             //set netif ip netmask and gateway    
+    dhcp_server_init(&dhcp, &gw, &mask);                                                        //start DHCP server
+    dns_server_init(&dns, &gw);                                                                 //start DNS server              
+    netif_set_hostname(netif_default, "rfunit");                                                //set hostname
+    #else
+    cyw43_arch_enable_sta_mode();                                                               //enable STA mode
+    cyw43_arch_wifi_connect_async(SSID, PASSWORD, CYW43_AUTH_WPA2_AES_PSK);                     //connect to AP
+    while(cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {              //wait for connection
+        vTaskDelay(1000);
+    }
+    netif_set_hostname(netif_default, "rfunit");                                                //set hostname
+    dhcp_start(netif_default);                                                                  //start DHCP client
+    while(!dhcp_supplied_address(netif_default)) {                                              //wait for DHCP to finish
+        vTaskDelay(1000);
+    }
+    #endif
     //mdns_resp_init();
     //mdns_resp_add_netif(netif_default, "rfunit");
 
