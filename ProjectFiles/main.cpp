@@ -39,13 +39,12 @@ static QueueHandle_t tcpQueue = NULL;
 static QueueHandle_t dmxQueue = NULL;
 static std::set<uint16_t> captured;
 enum HTTPDREQ {
-    NONE,
-    INDEX,
-    STYLE,
-    SCRIPT,
-    FAVICON,
-    API
+    API,
+    APIKEYS,
+    APIAUTH
 };
+
+static HTTPDREQ httpdreq = API;
 
 static DMX dmx;
 
@@ -80,6 +79,15 @@ void dmx_task(void *pvParameters) {
 
 err_t httpd_post_begin(void * connection, const char *uri, const char * http_request, u16_t http_request_len, int content_len, char * response_uri, u16_t response_uri_len, u8_t *post_auto_wnd) {
     if (strncmp(uri, "/api", 4) == 0) {
+        if (strncmp(uri, "/api/auth", 9) == 0) {
+            httpdreq = HTTPDREQ::APIAUTH;
+            return ERR_OK;
+        }
+        if (strncmp(uri, "/api/keys", 9) == 0) {
+            httpdreq = HTTPDREQ::APIKEYS;
+            return ERR_OK;
+        }
+        httpdreq = API;
         return ERR_OK;
     }
     return ERR_VAL;
@@ -151,7 +159,7 @@ void processKeys(char* keys, size_t keysLength) {
 
 }
 
-void parseAPIRequest(char* json, int json_len) {
+void parseAPIKeysRequest(void* connection, char* json, int json_len) {
     char *value;
     size_t value_len;
     JSONStatus_t result;
@@ -163,17 +171,50 @@ void parseAPIRequest(char* json, int json_len) {
         return;
     processKeys(value, value_len);
 }
+uint16_t parseAPIAuthRequest(void* connection, char* json, int json_len) {
+    char* value;
+    size_t value_len;
+    JSONStatus_t result;
+    result = JSON_Validate(json, json_len);
+    if (result != JSONSuccess)
+        return 400;
+    result = JSON_Search(json, json_len, "password", 8, &value, &value_len);
+    if (result != JSONSuccess)
+        return 400;
+    if (strncmp(value, PASSWORD, value_len) == 0) {
+        return 200;
+    } 
+    return 400;
+}
 
 err_t httpd_post_receive_data(void* connection, struct pbuf *p) {
     char* data = (char*)p->payload;
-    parseAPIRequest(data, p->len);
+    switch (httpdreq) {
+        case HTTPDREQ::APIAUTH: {
+            if (parseAPIAuthRequest(connection, data, p->len) == 200) {
+                snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
+            }
+            else {
+                snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 400 Bad Request");
+            }
+            break;
+        }
+        case HTTPDREQ::APIKEYS: {
+            parseAPIKeysRequest(connection, data, p->len);
+            snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
+            break;
+        }
+        case HTTPDREQ::API: {
+            snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
+            break;
+        }
+    }
     pbuf_free(p);
     return ERR_OK;
 }
 
 void httpd_post_finished(void* connection, char* response_uri, u16_t response_uri_len) {
     http_state *hs = (http_state*)connection;
-    snprintf(hs->hdrs[0], hs->hdr_content_len[0], "HTTP/1.1 200 OK");
     snprintf(hs->hdrs[1], hs->hdr_content_len[1], "Content-type: text/html");
     snprintf(hs->hdrs[2], hs->hdr_content_len[2], "");
     snprintf(response_uri, response_uri_len, "/index.html");

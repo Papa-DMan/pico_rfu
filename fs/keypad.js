@@ -3,9 +3,21 @@ const displayElement = document.querySelector('.display');
 const host = window.location.hostname;
 const port = window.location.port;
 
-let apiUrl = `http://${host}:${port}/api`;
+let apiUrl = `http://${host}:${port}/api/keys`;
+
+const passwordCookie = getCookie("rfu-password");
+if (!passwordCookie) {
+  window.location.href = "index.html";
+}
+
+
 
 function appendKey(key) {
+  // If the user presses the full button twice in a row, send the keys
+  if (key === 'full' && keyBuffer.endsWith('full')) {
+    sendKeys();
+    return;
+  }
   keyBuffer += key;
   updateDisplay();
 }
