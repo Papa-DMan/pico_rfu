@@ -159,7 +159,7 @@ void processKeys(char* keys, size_t keysLength) {
 
 }
 
-void parseAPIKeysRequest(void* connection, char* json, int json_len) {
+void parseAPIKeysRequest(char* json, int json_len) {
     char *value;
     size_t value_len;
     JSONStatus_t result;
@@ -171,7 +171,7 @@ void parseAPIKeysRequest(void* connection, char* json, int json_len) {
         return;
     processKeys(value, value_len);
 }
-uint16_t parseAPIAuthRequest(void* connection, char* json, int json_len) {
+uint16_t parseAPIAuthRequest(char* json, int json_len) {
     char* value;
     size_t value_len;
     JSONStatus_t result;
@@ -191,7 +191,7 @@ err_t httpd_post_receive_data(void* connection, struct pbuf *p) {
     char* data = (char*)p->payload;
     switch (httpdreq) {
         case HTTPDREQ::APIAUTH: {
-            if (parseAPIAuthRequest(connection, data, p->len) == 200) {
+            if (parseAPIAuthRequest(data, p->len) == 200) {
                 snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
             }
             else {
@@ -200,7 +200,7 @@ err_t httpd_post_receive_data(void* connection, struct pbuf *p) {
             break;
         }
         case HTTPDREQ::APIKEYS: {
-            parseAPIKeysRequest(connection, data, p->len);
+            parseAPIKeysRequest(data, p->len);
             snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
             break;
         }
