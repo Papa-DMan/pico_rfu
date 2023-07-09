@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "/Users/mahaneyd/Documents/GitHub/pico_rfu",
+    "cmake.sourceDirectory": "${workspaceFolder}",
     "cmake.statusbar.advanced": {
         "debug:": {
             "visibility" : "hidden"

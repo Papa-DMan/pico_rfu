@@ -1,10 +1,16 @@
 {
     "configurations": [
         {
-            "name": "CMake",
+            "name": "CMake (macOS)",
             "compileCommands": "./build/compile_commands.json",
             "configurationProvider": "ms-vscode.cmake-tools",
             "compilerPath": "/Applications/ArmGNUToolchain/12.2.mpacbti-rel1/arm-none-eabi/bin/arm-none-eabi-g++"
+        },
+        {
+            "name": "CMake (Linux)",
+            "compileCommands": "./build/compile_commands.json",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compilerPath": "~/gcc-arm-none-eabi-10.3-2021.10/bin/arm-none-eabi-g++"
         }
     ],
     "version": 4
