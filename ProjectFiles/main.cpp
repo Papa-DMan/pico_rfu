@@ -27,6 +27,7 @@
 #include "core_json.h"
 #include <cstring>
 #include <set>
+#include "encryption_keys.h"
 
 #define NUMDMX 1
 #define SSID            "RemoteFocus"

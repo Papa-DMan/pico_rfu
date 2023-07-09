@@ -1,37 +1,45 @@
 cmake_minimum_required(VERSION 3.12)
-project(KeysLibrary)
+project(encryption_keys)
 
 # Find Python
-find_package(Python REQUIRED)
+find_package(Python REQUIRED COMPONENTS Interpreter)
 
-# Set the output directory
-set(OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated_headers")
+# Define the Python script path
+set(PYTHON_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/pemtoc.py)
 
-# Create the output directory
-file(MAKE_DIRECTORY ${OUTPUT_DIR})
+# Define the output directory for generated headers
+make_directory(${CMAKE_BINARY_DIR}/generated_headers)
+set(GENERATED_HEADERS_DIR ${CMAKE_BINARY_DIR}/generated_headers)
 
-# Get a list of all PEM files in the current directory
-file(GLOB PEM_FILES "*.pem")
+# Define the input file, destination file, and variable name
+set(INPUT_FILE ${CMAKE_CURRENT_LIST_DIR}/private_unencrypted.pem)
+set(DESTINATION_FILE ${GENERATED_HEADERS_DIR}/encryption_keys.h)
 
-# Iterate over each PEM file and generate the corresponding header file
-foreach(PEM_FILE ${PEM_FILES})
-    get_filename_component(FILE_NAME ${PEM_FILE} NAME_WE)
-    set(HEADER_FILE "${OUTPUT_DIR}/${FILE_NAME}.h")
-    set(VARIABLE_NAME "${FILE_NAME}_data")
+# Run the Python script to generate headers
+execute_process(
+    COMMAND ${Python_EXECUTABLE} ${PYTHON_SCRIPT} ${INPUT_FILE} ${DESTINATION_FILE}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    RESULT_VARIABLE PYTHON_SCRIPT_RESULT
+)
 
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/script.py ${PEM_FILE} ${HEADER_FILE} ${VARIABLE_NAME}
-        RESULT_VARIABLE SCRIPT_RESULT
-    )
-    if (SCRIPT_RESULT EQUAL 0)
-        message("Generated header: ${HEADER_FILE}")
-    else()
-        message(FATAL_ERROR "Failed to generate header for file: ${PEM_FILE}")
-    endif()
-endforeach()
+if(PYTHON_SCRIPT_RESULT EQUAL 0)
+    message(STATUS "Header generation successful.")
+else()
+    message(FATAL_ERROR "Failed to generate headers.")
+endif()
 
-# Create the library target
-add_library(keys_library INTERFACE)
-target_include_directories(keys_library INTERFACE ${OUTPUT_DIR})
+# Include the generated headers directory
+include_directories(${GENERATED_HEADERS_DIR})
 
-# Add any other target-specific configurations, dependencies, etc.
+# Add your library source files here
+add_library(encryption_keys INTERFACE)
+
+# Add the generated headers to YourLibrary target
+# target_sources(YourLibrary INTERFACE ${DESTINATION_FILE})
+target_include_directories(encryption_keys INTERFACE ${GENERATED_HEADERS_DIR})
+
+# Specify the installation rules if needed
+install(DIRECTORY ${GENERATED_HEADERS_DIR}/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+)

@@ -1,5 +1,36 @@
 from flask import Flask, request, send_from_directory
 
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.backends import default_backend
+
+def decrypt_password(encrypted_password, private_key_path):
+    # Load the private key from the PEM file
+    with open(private_key_path, "rb") as key_file:
+        private_key = serialization.load_pem_private_key(
+            key_file.read(),
+            password=None,
+            backend=default_backend()
+        )
+
+    # Get the private key's key size
+    key_size = private_key.key_size
+
+    # Pad the encrypted password to match the key size
+    padded_encrypted_password = encrypted_password + b'\x00' * (key_size // 8 - len(encrypted_password))
+
+    # Decrypt the password using the private key
+    decrypted_password = private_key.decrypt(
+        padded_encrypted_password,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+
+    return decrypted_password.decode('utf-8')
+
 # Create an instance of the Flask application
 app = Flask(__name__)
 
@@ -8,12 +39,10 @@ app = Flask(__name__)
 def handle_auth():
     # Get the password from the request body
     password = request.json.get("password")
-
     if password is None:
         return "No password provided", 400
-    if not isinstance(password, str):
-        return "Password must be a string", 400
-    if password == "12345678": 
+    decrypted_password = decrypt_password(password, "keys/private_unencrypted.pem")
+    if decrypted_password == "12345678": 
         return "Password verified"
     return "Incorrect password", 401
 
