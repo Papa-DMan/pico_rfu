@@ -27,6 +27,11 @@
 #include "core_json.h"
 #include <cstring>
 #include <set>
+
+#include <pico/rand.h>
+#include <mbedtls/rsa.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/pem.h>
 #include "encryption_keys.h"
 
 #define NUMDMX 1
@@ -45,6 +50,9 @@ enum HTTPDREQ {
     APIKEYS,
     APIAUTH
 };
+
+static mbedtls_pem_context pem;
+static mbedtls_pk_context pk;
 
 static HTTPDREQ httpdreq = API;
 
@@ -189,7 +197,27 @@ void parseAPIKeysRequest(char* json, int json_len) {
         return;
     processKeys(value, value_len);
 }
+
+char * decryptPassword(char* password, size_t password_len) {
+    unsigned char result[MBEDTLS_MPI_MAX_SIZE];
+    size_t olen;
+    size_t decryptedPassword_len;
+    mbedtls_pk_init( &pk );
+    mbedtls_pem_init(&pem);
+    int readPem = mbedtls_pk_parse_key(&pk, private_key, sizeof(private_key), NULL, 0);
+    if (readPem != 0) {
+        return nullptr;
+    }
+    int status = mbedtls_pk_decrypt(&pk, (const unsigned char*)password, password_len, result, &olen, sizeof(result),nullptr, nullptr);
+    if (status != 0) {
+        return nullptr;
+    }
+    return (char*)result;
+}
+
+
 /**
+ * 
  * @brief Parses/verifies the api/auth request and returns the appropriate response code
  * @todo Implement encryption via mbedtls
  * @param json The json buffer to be parsed
@@ -207,6 +235,7 @@ uint16_t parseAPIAuthRequest(char* json, int json_len) {
     result = JSON_Search(json, json_len, "password", 8, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
+    char* passwd = decryptPassword(value, value_len);
     if (strncmp(value, PASSWORD, value_len) == 0) {
         return 200;
     } 

@@ -11,7 +11,18 @@ target_include_directories(Pico_RFU PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/dnsserver
 )
 
-target_link_libraries(Pico_RFU pico_stdlib pico_cyw43_arch_lwip_sys_freertos pico_lwip_http pico_lwip_mdns FreeRTOS-Kernel FreeRTOS-Kernel-Heap4 DMX coreJSON encryption_keys)
+target_link_libraries(Pico_RFU 
+    pico_stdlib 
+    pico_cyw43_arch_lwip_sys_freertos 
+    pico_lwip_http pico_lwip_mdns 
+    FreeRTOS-Kernel 
+    FreeRTOS-Kernel-Heap4 
+    DMX 
+    coreJSON
+    encryption_keys
+    pico_lwip_mbedtls
+    pico_mbedtls
+)
 # build dhcpserver/dhcpserver.c as a component of the target
 target_sources(Pico_RFU PRIVATE 
     dhcpserver/dhcpserver.c
