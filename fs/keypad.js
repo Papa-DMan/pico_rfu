@@ -9,6 +9,7 @@ const passwordCookie = getCookie("rfu-password");
 if (!passwordCookie) {
   window.location.href = "index.html";
 }
+authenticatePassword(passwordCookie);
 
 
 
@@ -98,4 +99,22 @@ function getCookie(name) {
     }
   }
   return "";
+}
+
+async function authenticatePassword(hashedPassword) {
+  if (hashedPassword) {
+    // Send a request to the API for password verification using the password cookie
+    const response = await fetch("/api/auth", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ password: hashedPassword })
+    });
+
+    if (response.ok) {
+      return;
+    } else
+      window.location.href = "index.html";
+  }
 }

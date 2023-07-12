@@ -30,8 +30,10 @@ def decrypt_password(encrypted_password, private_key_path):
             label=None
         )
     )
+    decoded_password = decrypted_password.decode("utf-8")
+    saltless_password = decoded_password.split("salt=")[0]
 
-    return decrypted_password.decode('utf-8')
+    return saltless_password
 
 # Create an instance of the Flask application
 app = Flask(__name__)

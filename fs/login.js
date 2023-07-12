@@ -100,7 +100,8 @@ document.addEventListener("DOMContentLoaded", function() {
   
     // Convert the password string to an ArrayBuffer
     const encoder = new TextEncoder();
-    const passwordBuffer = encoder.encode(password);
+    const passwordBuffer = encoder.encode(password + "salt=" + toString(Math.random() * (64 - password.length)));
+    
   
     // Encrypt the password using the public key
     const encryptedPasswordBuffer = await crypto.subtle.encrypt(

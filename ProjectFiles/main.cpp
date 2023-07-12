@@ -199,7 +199,7 @@ void parseAPIKeysRequest(char* json, int json_len) {
 }
 
 char * decryptPassword(char* password, size_t password_len) {
-    unsigned char result[MBEDTLS_MPI_MAX_SIZE];
+    uint8_t* result = (uint8_t*)malloc(512);
     size_t olen;
     size_t decryptedPassword_len;
     mbedtls_pk_init( &pk );
@@ -212,9 +212,12 @@ char * decryptPassword(char* password, size_t password_len) {
     if (status != 0) {
         return nullptr;
     }
+    char *s = strstr((char*)result, "salt="); //our request is salted so we need to reject non-salted requests
+    if (s == nullptr) {
+        return nullptr;
+    }
     return (char*)result;
 }
-
 
 /**
  * 
@@ -236,9 +239,11 @@ uint16_t parseAPIAuthRequest(char* json, int json_len) {
     if (result != JSONSuccess)
         return 400;
     char* passwd = decryptPassword(value, value_len);
-    if (strncmp(value, PASSWORD, value_len) == 0) {
+    if (strncmp(passwd, PASSWORD, sizeof(PASSWORD)) == 0) {
+        free(passwd);
         return 200;
-    } 
+    }
+    free(passwd);
     return 400;
 }
 
