@@ -198,8 +198,16 @@ void parseAPIKeysRequest(char* json, int json_len) {
     processKeys(value, value_len);
 }
 
+/**
+ * @brief Decrypts the password sent by the client
+ * @param password The password buffer to be decrypted
+ * @param password_len The length of the password buffer
+ * @post the result buffer is populated with the decrypted password and needs to be freed by the caller
+ * @return The decrypted password if the password is valid, nullptr otherwise
+ * 
+*/
 char * decryptPassword(char* password, size_t password_len) {
-    uint8_t* result = (uint8_t*)malloc(512);
+    uint8_t* result = new uint8_t[512];
     size_t olen;
     size_t decryptedPassword_len;
     mbedtls_pk_init( &pk );
@@ -222,7 +230,6 @@ char * decryptPassword(char* password, size_t password_len) {
 /**
  * 
  * @brief Parses/verifies the api/auth request and returns the appropriate response code
- * @todo Implement encryption via mbedtls
  * @param json The json buffer to be parsed
  * @param json_len The length of the json buffer
  * @return 200 if the password is correct, 400 otherwise
@@ -240,10 +247,10 @@ uint16_t parseAPIAuthRequest(char* json, int json_len) {
         return 400;
     char* passwd = decryptPassword(value, value_len);
     if (strncmp(passwd, PASSWORD, sizeof(PASSWORD)) == 0) {
-        free(passwd);
+        delete[] passwd;
         return 200;
     }
-    free(passwd);
+    delete[] passwd;
     return 400;
 }
 
@@ -326,10 +333,10 @@ void wifi_init_task(void *) {
     //mdns_resp_init();
     //mdns_resp_add_netif(netif_default, "rfunit");
 
-    dmxQueue = xQueueCreate(5, 512);                                        //create queue for DMX frames
+    dmxQueue = xQueueCreate(5, 512);                                                            //create queue for DMX frames
     dmx.begin(5, 6);
-    xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                      //create task to listen for DMX frames
-    //xTaskCreate(httpd_task, "HTTPD", 4096, httpd, 2, NULL);                 //create task to listen for HTTP requests
+    xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                                          //create task to listen for DMX frames
+    //xTaskCreate(httpd_task, "HTTPD", 4096, httpd, 2, NULL);                                   //create task to listen for HTTP requests
     httpd_init();
 
     vTaskDelete(NULL);

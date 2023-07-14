@@ -7,7 +7,7 @@
         {
             "name": "Pico Debug",
             "cwd": "${workspaceFolder}",
-            "executable": "./build/ProjectFiles/blink.elf",
+            "executable": "./build/ProjectFiles/Pico_RFU.elf",
             "request": "launch",
             "type": "cortex-debug",
             "runToEntryPoint": "main",
