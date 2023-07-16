@@ -82,6 +82,7 @@ document.addEventListener("DOMContentLoaded", function() {
   
 
   async function encryptPassword(password) {
+    return password;
     const publicKeyPath = '/public.pem';  // Replace with the correct path to your public key file
   
     // Fetch the public key from the PEM file

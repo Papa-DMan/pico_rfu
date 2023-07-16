@@ -35,9 +35,10 @@
 #include "encryption_keys.h"
 
 #define NUMDMX 1
-#define SSID            "RemoteFocus"
-#define PASSWORD        "12345678"
-#define AP_MODE         true
+#define SSID                "RemoteFocus"
+#define PASSWORD            "12345678"
+#define INTERFACEPASSWORD   "12345678"
+#define AP_MODE             true
 
 static ip4_addr_t gw, mask;
 static dhcp_server_t dhcp;
@@ -246,7 +247,7 @@ uint16_t parseAPIAuthRequest(char* json, int json_len) {
     if (result != JSONSuccess)
         return 400;
     char* passwd = decryptPassword(value, value_len);
-    if (strncmp(passwd, PASSWORD, sizeof(PASSWORD)) == 0) {
+    if (strncmp(passwd, INTERFACEPASSWORD, sizeof(INTERFACEPASSWORD)) == 0) {
         delete[] passwd;
         return 200;
     }
@@ -319,22 +320,32 @@ void wifi_init_task(void *) {
     dns_server_init(&dns, &gw);                                                                 //start DNS server              
     netif_set_hostname(netif_default, "rfunit");                                                //set hostname
     #else
+    vTaskDelay(1000);
     cyw43_arch_enable_sta_mode();                                                               //enable STA mode
     cyw43_arch_wifi_connect_async(SSID, PASSWORD, CYW43_AUTH_WPA2_AES_PSK);                     //connect to AP
-    while(cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {              //wait for connection
+    printf("Connecting to %s\n", SSID);
+    while(cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {   
+        printf("Status: %d\n", cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA));                                                                            //wait for connection
         vTaskDelay(1000);
     }
+    printf("\n");
+    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));                            //print IP address
     netif_set_hostname(netif_default, "rfunit");                                                //set hostname
     dhcp_start(netif_default);                                                                  //start DHCP client
+    printf("dhcp started\n");
     while(!dhcp_supplied_address(netif_default)) {                                              //wait for DHCP to finish
         vTaskDelay(1000);
+        printf(".");
     }
     #endif
+    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));                            //print IP address
     //mdns_resp_init();
     //mdns_resp_add_netif(netif_default, "rfunit");
 
     dmxQueue = xQueueCreate(5, 512);                                                            //create queue for DMX frames
-    dmx.begin(5, 6);
+    dmx.begin(6, 7, 4, 5);                                                                      //init DMX                
+    dmx.setOutput(true);
+    dmx.setInput(false);
     xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                                          //create task to listen for DMX frames
     //xTaskCreate(httpd_task, "HTTPD", 4096, httpd, 2, NULL);                                   //create task to listen for HTTP requests
     httpd_init();

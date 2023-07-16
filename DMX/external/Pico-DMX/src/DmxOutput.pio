@@ -13,13 +13,3 @@ writep:
     jmp wrapp   side 1  [7]
 
     set x, 21   side 1
-breakn:
-    jmp x--, breakn     [7]
-    nop         side 0  [7]
-wrapn:
-    pull block  side 0  [7]
-    set x 7     side 1  [3]
-writen:
-    out pins, 1
-    jmp x--, writen     [2]
-    jmp wrapn   side 0  [7]
