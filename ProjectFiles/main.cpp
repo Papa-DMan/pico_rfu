@@ -325,11 +325,11 @@ void wifi_init_task(void *) {
     cyw43_arch_wifi_connect_async(SSID, PASSWORD, CYW43_AUTH_WPA2_AES_PSK);                     //connect to AP
     printf("Connecting to %s\n", SSID);
     while(cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {   
-        printf("Status: %d\n", cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA));                                                                            //wait for connection
+        printf("Status: %d\n", cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA));           //wait for connection
         vTaskDelay(1000);
     }
     printf("\n");
-    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));                            //print IP address
+    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));                          //print IP address
     netif_set_hostname(netif_default, "rfunit");                                                //set hostname
     dhcp_start(netif_default);                                                                  //start DHCP client
     printf("dhcp started\n");
@@ -338,7 +338,7 @@ void wifi_init_task(void *) {
         printf(".");
     }
     #endif
-    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));                            //print IP address
+    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));                          //print IP address
     //mdns_resp_init();
     //mdns_resp_add_netif(netif_default, "rfunit");
 
