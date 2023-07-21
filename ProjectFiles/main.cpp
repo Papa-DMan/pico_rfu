@@ -343,9 +343,8 @@ void wifi_init_task(void *) {
     //mdns_resp_add_netif(netif_default, "rfunit");
 
     dmxQueue = xQueueCreate(5, 512);                                                            //create queue for DMX frames
-    dmx.begin(6, 7, 4, 5);                                                                      //init DMX                
-    dmx.setOutput(true);
-    dmx.setInput(false);
+    dmx.begin(5/*, 6*/);                                                                        //init DMX                
+
     xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                                          //create task to listen for DMX frames
     //xTaskCreate(httpd_task, "HTTPD", 4096, httpd, 2, NULL);                                   //create task to listen for HTTP requests
     httpd_init();
