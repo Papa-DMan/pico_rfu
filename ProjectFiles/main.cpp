@@ -149,7 +149,7 @@ void processKeys(char* keys, size_t keysLength) {
             isLEVEL = false;
             continue;
         }
-        else if (strncmp(t, "THRU", 7) == 0) {
+        else if (strncmp(t, "THRU", 4) == 0) {
             isTHRU = true;
         }
         else {
