@@ -73,7 +73,7 @@ void dmx_loop(void *pvParameters) {
 
 
 void dmx_task(void *pvParameters) {
-    xTaskCreate(dmx_loop, "dmx_loop", 2048, NULL, 3, NULL);
+    //xTaskCreate(dmx_loop, "dmx_loop", 2048, NULL, 3, NULL);
     uint8_t zero[512];
     memset(zero, 0, 512);
     xQueueSend(dmxQueue, zero, 0);
@@ -84,6 +84,7 @@ void dmx_task(void *pvParameters) {
             vTaskDelay(1);
         }
         dmx.unsafeWriteBuffer(data);
+        dmx.sendDMX();
     }
 }
 
@@ -164,6 +165,7 @@ void processKeys(char* keys, size_t keysLength) {
             } else
             if (isTHRU) {
                 uint16_t channel = atoi(t);
+                if (channel >= 1 && channel <= 512)
                 for (int i = channels.back() + 1; i <= channel; i++) {
                     channels.push_back(i);
                 }
@@ -343,7 +345,7 @@ void wifi_init_task(void *) {
     //mdns_resp_add_netif(netif_default, "rfunit");
 
     dmxQueue = xQueueCreate(5, 512);                                                            //create queue for DMX frames
-    dmx.begin(5/*, 6*/);                                                                        //init DMX                
+    dmx.begin(2/*, 6*/);                                                                        //init DMX                
 
     xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                                          //create task to listen for DMX frames
     //xTaskCreate(httpd_task, "HTTPD", 4096, httpd, 2, NULL);                                   //create task to listen for HTTP requests
