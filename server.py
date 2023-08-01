@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.backends import default_backend
 
 def decrypt_password(encrypted_password, private_key_path):
+    return encrypted_password
     # Load the private key from the PEM file
     encrypted_password = base64.b64decode(encrypted_password)
     with open(private_key_path, "rb") as key_file:
@@ -54,7 +55,7 @@ def handle_auth():
 def handle_keys():
     # Get the password from the request body
     keys = request.json.get("keys")
-    return "Keys verified", 200
+    return "", 200
     
 
 

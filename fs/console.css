@@ -1,0 +1,217 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .fader-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px;
+  }
+  
+  .fader-wrapper {
+    width: 60px; /* Adjust the width to set the vertical fader size */
+    height: 300px; /* Adjust the height to set the vertical fader size */
+    margin: 10px;
+    position: relative;
+  }
+  
+  .fader {
+    width: 200px;
+    height: 40px;
+    appearance: none; /* Remove default OS styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #f0f0f0;
+    border: 2px solid #666;
+    border-radius: 5px;
+    transform: rotate(-90deg) translateX(-150%); /* Rotate the fader element to make it vertical */
+    transform-origin: top left; /* Rotate from the bottom right corner */
+  }
+  
+  .fader::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #666;
+    cursor: pointer;
+  }
+  
+  .fader::-moz-range-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #666;
+    cursor: pointer;
+  }
+  
+  .fader-label {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .console-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 50px;
+  }
+
+  /* Path: fs/console.css */
+  /* styles for the keypad and macro pad */
+  .kp-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+  }
+  
+  .display {
+    width: 80%;
+    max-width: 300px;
+    height: 50px;
+    border: 1px solid black;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 24px;
+    background-color: #f2f2f2;
+  }
+  
+  .keypad-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    outline: 1px solid black;
+    padding: 10px;
+    margin-right: 10px;
+    column-gap: 5px; /* Add spacing between the columns */
+  }
+  
+  .keypad button,
+  .macro-pad button {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+    margin-bottom: 10px;
+    touch-action: manipulation;
+    background-color: #e6e6e6;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .keypad button:hover,
+  .macro-pad button:hover {
+    background-color: #d9d9d9;
+  }
+  
+  .macro-pad {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    outline: 1px solid black;
+    padding: 10px;
+    column-gap: 5px; /* Add spacing between the columns */
+  }
+  
+  /* Media queries */
+  @media only screen and (max-width: 600px) {
+    .container {
+      margin-top: 20px;
+    }
+  
+    .display {
+      width: 90%;
+      max-width: none;
+      font-size: 20px;
+    }
+  
+    .keypad-container {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .keypad,
+    .macro-pad {
+      width: 90%;
+      max-width: none;
+      margin-right: 0;
+      column-gap: 4px; /* Add spacing between the columns */
+    }
+  
+    .keypad button,
+    .macro-pad button {
+      width: 50px;
+      height: 50px;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+  
+    .macro-pad {
+      margin-top: 10px;
+    }
+  }
+  
+  .fader-container.record-mode .fader-wrapper {
+    display: none;
+  }
+  
+  .fader-container.record-mode .selection-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .fader-container.record-mode .selection-button {
+    width: 80px;
+    height: 40px;
+    font-size: 16px;
+    margin: 5px;
+    background-color: #f2f2f2;
+    border: 1px solid #666;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .fader-container.record-mode .selection-button.selected {
+    background-color: #666;
+    color: #fff;
+  }
+
+  .patch-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+    padding: 10px;
+  }
+
+  .patch-container button {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+    margin-bottom: 10px;
+    touch-action: manipulation;
+    background-color: #e6e6e6;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .patch-container button:hover {
+    background-color: #d9d9d9;
+  }

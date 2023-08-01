@@ -1,9 +1,11 @@
 let keyBuffer = '';
+let prevBuffer = '';
 const displayElement = document.querySelector('.display');
 const host = window.location.hostname;
 const port = window.location.port;
 
 let apiUrl = `http://${host}:${port}/api/keys`;
+let soloMode = false;
 
 const passwordCookie = getCookie("rfu-password");
 if (!passwordCookie) {
@@ -11,7 +13,44 @@ if (!passwordCookie) {
 }
 authenticatePassword(passwordCookie);
 
-
+function solo() {
+  //switch to solo mode where only one value is controlled
+  soloMode = !soloMode;
+  if (soloMode) {
+    keyBuffer = prevBuffer;
+    updateDisplay();
+    document.getElementById("solo").style.backgroundColor = "red";
+    } else {
+    document.getElementById("solo").style.backgroundColor = "#e6e6e6";
+  }
+}
+function soloPlus() {
+  //increase the value of the solo mode
+  if (soloMode) {
+    let match = prevBuffer.match(/\d{3}/)
+    let tail = prevBuffer.slice(match.index + 3);
+    if (match) {
+      let num = parseInt(match[0]) + 1;
+      keyBuffer = num.toString() + tail;
+      sendKeys();
+      keyBuffer = num.toString() + tail;
+      updateDisplay();
+    }
+  }
+}
+function soloMinus() {
+  if (soloMode) {
+    let match = prevBuffer.match(/\d{3}/)
+    let tail = prevBuffer.slice(match.index + 3);
+    if (match) {
+      let num = parseInt(match[0]) - 1;
+      keyBuffer = num.toString() + tail;
+      sendKeys();
+      keyBuffer = num.toString() + tail;
+      updateDisplay();
+    }
+  }
+}
 
 function appendKey(key) {
   // If the user presses the full button twice in a row, send the keys
@@ -33,7 +72,7 @@ function sendKeys() {
   var paddedBuffer = keyBuffer.replace(/\b(\d{1,2})(?![\d.])/g, function(match, number) {
     return number.padStart(3, '0');
   });
-  
+  prevBuffer = paddedBuffer;
   
   // Send the keyBuffer to the backend API
 
@@ -61,6 +100,8 @@ function sendKeys() {
 
 function release() {
   // Send the keyBuffer to the backend API
+  soloMode = false;
+  document.getElementById("solo").style.backgroundColor = "#e6e6e6";
   fetch(apiUrl, {
     method: 'POST',
     headers: {
