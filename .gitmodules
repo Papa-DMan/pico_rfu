@@ -2,3 +2,7 @@
     path = FreeRTOS/FreeRTOS-Kernel
     url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
     tag = V10.5.1
+[submodule "Pico-SDK"]
+    path = PicoSDK/Pico-SDK
+    url = https://github.com/raspberrypi/pico-sdk.git
+    tag = SDK 1.5.1
