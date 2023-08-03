@@ -57,6 +57,24 @@
   column-gap: 5px; /* Add spacing between the columns */
 }
 
+.channel-display {
+  border-collapse: collapse;
+}
+
+.channel-array {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.channel {
+  padding: 8px;
+}
+
+.channel p {
+  margin: 0;
+}
+
 /* Media queries */
 @media only screen and (max-width: 600px) {
   .container {

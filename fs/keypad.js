@@ -1,5 +1,6 @@
 let keyBuffer = '';
 let prevBuffer = '';
+let channelData = new Map();
 const displayElement = document.querySelector('.display');
 const host = window.location.hostname;
 const port = window.location.port;
@@ -20,8 +21,9 @@ function solo() {
     keyBuffer = prevBuffer;
     updateDisplay();
     document.getElementById("solo").style.backgroundColor = "red";
-    } else {
+  } else {
     document.getElementById("solo").style.backgroundColor = "#e6e6e6";
+    release();
   }
 }
 function soloPlus() {
@@ -30,6 +32,8 @@ function soloPlus() {
     let match = prevBuffer.match(/\d{3}/)
     let tail = prevBuffer.slice(match.index + 3);
     if (match) {
+      keyBuffer = match[0] + " AT 0"
+      sendKeys();
       let num = parseInt(match[0]) + 1;
       keyBuffer = num.toString() + tail;
       sendKeys();
@@ -43,6 +47,8 @@ function soloMinus() {
     let match = prevBuffer.match(/\d{3}/)
     let tail = prevBuffer.slice(match.index + 3);
     if (match) {
+      keyBuffer = match[0] + " AT 0"
+      sendKeys();
       let num = parseInt(match[0]) - 1;
       keyBuffer = num.toString() + tail;
       sendKeys();
@@ -67,15 +73,49 @@ function clearDisplay() {
   updateDisplay();
 }
 
+function parseBuffer(buffer) {
+  let keys = buffer.split(" ");
+  let atIndex = keys.indexOf("AT");
+  let thruIndex = keys.indexOf("THRU");
+  let level = keys[atIndex + 1];
+  let channels = [];
+  if (level === "FULL" || level === "255") {
+    level = "FL";
+  }
+  if (thruIndex === -1) {
+    for (let i = 0; i < atIndex; i++) {
+      if (keys[i] === "AND") {
+        continue;
+      }
+      channels.push(keys[i]);
+    }
+  }
+  else {
+    for (let i = parseInt(keys[thruIndex - 1]); i <= parseInt(keys[thruIndex + 1]); i++) {
+      channels.push(i.toString());
+    }
+  }
+  for (let i = 0; i < channels.length; i++) {
+    if (level === "0") {
+      console.log("deleting")
+      let success = channelData.delete(parseInt(channels[i]).toString());
+      console.log(success);
+    } else {
+      channelData.set(channels[i], level);
+    }
+  }
+  channelData = new Map([...channelData.entries()].sort());
+}
+
+
 function sendKeys() {
   // Pad all the numbers in the keyBuffer with zeros so they are 3 digits long
-  var paddedBuffer = keyBuffer.replace(/\b(\d{1,2})(?![\d.])/g, function(match, number) {
+  var paddedBuffer = keyBuffer.replace(/\b(\d{1,2})(?![\d.])/g, function (match, number) {
     return number.padStart(3, '0');
   });
   prevBuffer = paddedBuffer;
-  
+  parseBuffer(keyBuffer);
   // Send the keyBuffer to the backend API
-
 
 
   fetch(apiUrl, {
@@ -100,6 +140,7 @@ function sendKeys() {
 
 function release() {
   // Send the keyBuffer to the backend API
+  channelData.clear();
   soloMode = false;
   document.getElementById("solo").style.backgroundColor = "#e6e6e6";
   fetch(apiUrl, {
@@ -109,22 +150,51 @@ function release() {
     },
     body: JSON.stringify({ keys: 'release' })
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log('API response:', data);
-    // Handle the API response as needed
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    // Handle any errors that occur during the API call
-  });
+    .then(response => response.json())
+    .then(data => {
+      console.log('API response:', data);
+      // Handle the API response as needed
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      // Handle any errors that occur during the API call
+    });
 
   // Clear the keyBuffer and display
   clearDisplay();
+  updateChannelDisplay();
 }
+
+function updateChannelDisplay() {
+  const displayElement = document.querySelector('.channel-display');
+  let displayHtml = '<h2>Current Channels and Levels:</h2>';
+
+  if (channelData.length === 0) {
+    displayHtml += '<p>No channels to display</p>';
+  } else {
+    displayHtml += '<div class="channel-array">';
+
+    for (const data of channelData) {
+      displayHtml += `
+        <div class="channel">
+          <p>${data[0]}</p>
+          <p>${data[1]}</p>
+        </div>
+      `;
+    }
+
+    displayHtml += '</div>';
+  }
+
+  displayElement.innerHTML = displayHtml;
+}
+
+
+
 
 function updateDisplay() {
   displayElement.textContent = keyBuffer;
+  updateChannelDisplay();
 }
 
 function getCookie(name) {
