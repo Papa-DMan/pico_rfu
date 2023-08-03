@@ -26,4 +26,7 @@
         "string_view": "cpp",
         "initializer_list": "cpp"
     },
+    "cmake.additionalCompilerSearchDirs": [
+        "/Applications/ArmGNUToolchain/12.2.mpacbti-rel1/arm-none-eabi"
+    ],
 }

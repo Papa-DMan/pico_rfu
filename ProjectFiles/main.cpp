@@ -28,6 +28,7 @@
 #include <cstring>
 #include <set>
 
+#define USE_ENCRYPTION FALSE
 #include <pico/rand.h>
 #include <mbedtls/rsa.h>
 #include <mbedtls/pk.h>
@@ -52,14 +53,16 @@ enum HTTPDREQ {
     APIAUTH
 };
 
+#if USE_ENCRYPTION
 static mbedtls_pem_context pem;
 static mbedtls_pk_context pk;
+#endif
 
 static HTTPDREQ httpdreq = API;
 
 static DMX dmx;
 
-
+/*
 void dmx_loop(void *pvParameters) {
     TickType_t xLastWakeTime = xTaskGetTickCount();
     while (1) {
@@ -70,7 +73,7 @@ void dmx_loop(void *pvParameters) {
         dmx.sendDMX();
     }
 }
-
+*/
 
 void dmx_task(void *pvParameters) {
     //xTaskCreate(dmx_loop, "dmx_loop", 2048, NULL, 3, NULL);
@@ -200,7 +203,7 @@ void parseAPIKeysRequest(char* json, int json_len) {
         return;
     processKeys(value, value_len);
 }
-
+#if USE_ENCRYPTION
 /**
  * @brief Decrypts the password sent by the client
  * @param password The password buffer to be decrypted
@@ -229,6 +232,11 @@ char * decryptPassword(char* password, size_t password_len) {
     }
     return (char*)result;
 }
+#else
+char * decryptPassword(char* password, size_t password_len) {
+    return password;
+}
+#endif
 
 /**
  * 
@@ -348,7 +356,6 @@ void wifi_init_task(void *) {
     dmx.begin(2/*, 6*/);                                                                        //init DMX                
 
     xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                                          //create task to listen for DMX frames
-    //xTaskCreate(httpd_task, "HTTPD", 4096, httpd, 2, NULL);                                   //create task to listen for HTTP requests
     httpd_init();
 
     vTaskDelete(NULL);
