@@ -22,6 +22,7 @@ target_link_libraries(Pico_RFU
     encryption_keys
     pico_lwip_mbedtls
     pico_mbedtls
+    EEPROM
 )
 # build dhcpserver/dhcpserver.c as a component of the target
 target_sources(Pico_RFU PRIVATE 

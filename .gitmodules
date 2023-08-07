@@ -6,3 +6,7 @@
 	path = pico-sdk
 	url = https://github.com/raspberrypi/pico-sdk.git
     tag = 1.5.1
+[submodule "coreJSON"]
+	path = FreeRTOS/coreJSON
+	url = https://github.com/FreeRTOS/coreJSON.git
+    tag = v3.2.0
