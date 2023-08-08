@@ -56,6 +56,13 @@ def handle_keys():
     # Get the password from the request body
     keys = request.json.get("keys")
     return "", 200
+
+@app.route("/api/conf", methods=["POST"])
+def handle_conf():
+    # Get the password from the request body
+    conf = request.json
+    print(conf)
+    return "", 200
     
 
 

@@ -115,6 +115,10 @@ err_t httpd_post_begin(void* connection, const char* uri, const char* http_reque
             httpdreq = HTTPDREQ::APIKEYS;
             return ERR_OK;
         }
+        if (strncmp(uri, "/api/conf", 9) == 0) {
+            httpdreq = HTTPDREQ::APICONF;
+            return ERR_OK;
+        }
         httpdreq = API;
         return ERR_OK;
     }
