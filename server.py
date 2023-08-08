@@ -62,7 +62,7 @@ def handle_conf():
     # Get the password from the request body
     conf = request.json
     print(conf)
-    return "", 200
+    return "Ok", 200
     
 
 
