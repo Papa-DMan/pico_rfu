@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
             body: JSON.stringify({ num_dmx, num_sACN, hostname, ssid, password, web_password, ap_mode, encrypt }) 
         }).then(function (response) {
             if (response.ok) {
-                alert("Settings saved successfully!\n\nPlease restart the device to apply the changes.");
+                alert("Settings saved successfully!\nDevice restarting in 5 seconds...");
             }
         });
     });

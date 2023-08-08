@@ -275,11 +275,14 @@ uint16_t parseAPIAuthRequest(char* json, int json_len) {
  * @post The config is written to the EEPROM
  */
 void write_config_task(void* pvParameters) {
+    #define AIRCR_Register (*((volatile uint32_t*)(PPB_BASE + 0x0ED0C)))
     // enter critical section
     taskENTER_CRITICAL();
     eeprom.put(0, rfu_config);
     eeprom.commit();
     taskEXIT_CRITICAL();
+    vTaskDelay(5000);
+    AIRCR_Register = 0x5FA0004;
     vTaskDelete(NULL);
 }
 
