@@ -13,16 +13,19 @@
             "runToEntryPoint": "main",
             "servertype": "openocd",
             "device": "RP2040",
-            "armToolchainPath": "/home/mahaneyd/gcc-arm-none-eabi-10.3-2021.10/bin",
+            "armToolchainPath": "/usr/bin",
             "configFiles": [
                 "interface/cmsis-dap.cfg",
                 "target/rp2040.cfg"
             ],
             "svdFile": "/mnt/c/Users/mahan/Documents/git/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
+            "preResetCommands": [
+                "program ${workspaceFolder}/build/ProjectFiles/Pico_RFU.elf verify reset exit"
+            ],
             "postRestartCommands": [
                 "continue"
             ],
-            "searchDir": ["~/openocd/tcl"],
+            "searchDir": ["/usr/share/openocd/scripts"],
             "liveWatch": {
                 "enabled": true,
                 "samplesPerSecond": 4
