@@ -21,6 +21,7 @@
 #include "dnsserver.h"
 #include "encryption_keys.h"
 #include "hardware/timer.h"
+#include "hardware/watchdog.h"
 #include "lwip/api.h"
 #include "lwip/apps/fs.h"
 #include "lwip/apps/httpd.h"
@@ -47,9 +48,13 @@ struct rfu_config_t {
     uint8_t num_dmx = 1;
     uint16_t num_sACN = 0;
     char hostname[32] = "rfunit";
+    size_t hostname_len = 6;
     char ssid[32] = "RemoteFocus";
+    size_t ssid_len = 11;
     char password[64] = "12345678";
+    size_t password_len = 8;
     char web_password[64] = "12345678";
+    size_t web_password_len = 8;
     bool ap_mode = true;
     bool encrypt = false;
     char checksum = calcCheckSum((char*)this, sizeof(rfu_config_t) - 1);
@@ -261,11 +266,9 @@ uint16_t parseAPIAuthRequest(char* json, int json_len) {
     if (result != JSONSuccess)
         return 400;
     char* passwd = decryptPassword(value, value_len);
-    if (strncmp(passwd, rfu_config.web_password, sizeof(rfu_config.web_password)) == 0) {
-        delete[] passwd;
+    if (strncmp(passwd, rfu_config.web_password, rfu_config.web_password_len) == 0) {
         return 200;
     }
-    delete[] passwd;
     return 400;
 }
 
@@ -305,27 +308,31 @@ uint16_t parseAPIConfRequest(char* json, int json_len) {
     result = JSON_Search(json, json_len, "hostname", 8, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
-    strncpy(config.hostname, value, sizeof(config.hostname));
+    strncpy(config.hostname, value, value_len);
+    config.hostname_len = value_len;
     result = JSON_Search(json, json_len, "ssid", 4, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
-    strncpy(config.ssid, value, sizeof(config.ssid));
+    strncpy(config.ssid, value, value_len);
+    config.ssid_len = value_len;
     result = JSON_Search(json, json_len, "password", 8, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
-    strncpy(config.password, value, sizeof(config.password));
+    strncpy(config.password, value, value_len);
+    config.password_len = value_len;
     result = JSON_Search(json, json_len, "web_password", 12, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
-    strncpy(config.web_password, value, sizeof(config.web_password));
+    strncpy(config.web_password, value, value_len);
+    config.web_password_len = value_len;
     result = JSON_Search(json, json_len, "ap_mode", 7, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
-    config.ap_mode = atoi(value);
+    (strncmp(value, "true", value_len) == 0) ? config.ap_mode = true : config.ap_mode = false;
     result = JSON_Search(json, json_len, "encrypt", 7, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
-    config.encrypt = atoi(value);
+    (strncmp(value, "true", value_len) == 0) ? config.encrypt = true : config.encrypt = false;
     config.checksum = calcCheckSum((char*)&config, sizeof(rfu_config_t) - 1);
     memcpy(&rfu_config, &config, sizeof(rfu_config_t));
     xTaskCreate(write_config_task, "write_config_task", 1024, NULL, configMAX_PRIORITIES - 1, NULL);

@@ -12,6 +12,8 @@
             "type": "cortex-debug",
             "runToEntryPoint": "main",
             "servertype": "openocd",
+            //"servertype": "external",
+            //"gdbTarget": "localhost:50000",
             "device": "RP2040",
             "armToolchainPath": "/usr/bin",
             "configFiles": [
@@ -19,9 +21,6 @@
                 "target/rp2040.cfg"
             ],
             "svdFile": "/mnt/c/Users/mahan/Documents/git/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
-            "preResetCommands": [
-                "program ${workspaceFolder}/build/ProjectFiles/Pico_RFU.elf verify reset exit"
-            ],
             "postRestartCommands": [
                 "continue"
             ],
@@ -30,6 +29,6 @@
                 "enabled": true,
                 "samplesPerSecond": 4
             }
-        }
+        },
     ]
 }
