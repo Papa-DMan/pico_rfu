@@ -19,16 +19,16 @@
       <input type="number" id="num_sACN" min="0" max="63999" required><br>
 
       <label for="hostname">Hostname:</label>
-      <input type="text" id="hostname" maxlength="32" required><br>
+      <input type="text" id="hostname" minlength="1" maxlength="32" required><br>
 
       <label for="ssid">SSID:</label>
-      <input type="text" id="ssid" maxlength="32" required><br>
+      <input type="text" id="ssid" minlength="8" maxlength="32" required><br>
 
       <label for="password">Password:</label>
-      <input type="password" id="password" maxlength="64" required><br>
+      <input type="password" id="password" minlength="8" maxlength="64" required><br>
 
       <label for="web_password">Web Password:</label>
-      <input type="password" id="web_password" maxlength="64" required><br>
+      <input type="password" id="web_password" minlength="8" maxlength="64" required><br>
 
       <label for="ap_mode">AP Mode:</label>
       <input type="checkbox" id="ap_mode"><br>

@@ -37,13 +37,6 @@
 
 // default config values
 static EEPROMClass eeprom;
-char calcCheckSum(char* data, size_t len) {
-    char checksum = 0;
-    for (int i = 0; i < len; i++) {
-        checksum += data[i];
-    }
-    return checksum;
-}
 struct rfu_config_t {
     uint8_t num_dmx = 1;
     uint16_t num_sACN = 0;
@@ -57,14 +50,41 @@ struct rfu_config_t {
     size_t web_password_len = 8;
     bool ap_mode = true;
     bool encrypt = false;
-    char checksum = calcCheckSum((char*)this, sizeof(rfu_config_t) - 1);
+    uint8_t checksum = 111;
 };
-static rfu_config_t rfu_config;
+rfu_config_t rfu_config;
+
+uint8_t calcCheckSum(rfu_config_t data) {
+    uint8_t checksum = 0;
+    checksum += data.num_dmx;
+    checksum += data.num_sACN;
+    for (int i = 0; i < 32; i++) {
+        checksum += data.hostname[i];
+    }
+    for (int i = 0; i < 32; i++) {
+        checksum += data.ssid[i];
+    }
+    for (int i = 0; i < 64; i++) {
+        checksum += data.password[i];
+    }
+    for (int i = 0; i < 64; i++) {
+        checksum += data.web_password[i];
+    }
+    checksum += data.hostname_len;
+    checksum += data.ssid_len;
+    checksum += data.password_len;
+    checksum += data.web_password_len;
+    checksum += data.ap_mode;
+    checksum += data.encrypt;
+    return checksum;
+}
+
 
 void loadConfig() {
     rfu_config_t config;
     eeprom.get(0, config);
-    if (config.checksum == calcCheckSum((char*)&config, sizeof(rfu_config_t) - 1)) {
+    if (config.checksum == calcCheckSum(config)) {
+        memset(&rfu_config, 0, sizeof(rfu_config_t));
         memcpy(&rfu_config, &config, sizeof(rfu_config_t));
     }
 }
@@ -294,6 +314,7 @@ uint16_t parseAPIConfRequest(char* json, int json_len) {
     size_t value_len;
     JSONStatus_t result;
     rfu_config_t config;
+    memset(&config, 0, sizeof(rfu_config_t));
     result = JSON_Validate(json, json_len);
     if (result != JSONSuccess)
         return 400;
@@ -333,7 +354,8 @@ uint16_t parseAPIConfRequest(char* json, int json_len) {
     if (result != JSONSuccess)
         return 400;
     (strncmp(value, "true", value_len) == 0) ? config.encrypt = true : config.encrypt = false;
-    config.checksum = calcCheckSum((char*)&config, sizeof(rfu_config_t) - 1);
+    config.checksum = calcCheckSum(config);
+    memset(&rfu_config, 0, sizeof(rfu_config_t));
     memcpy(&rfu_config, &config, sizeof(rfu_config_t));
     xTaskCreate(write_config_task, "write_config_task", 1024, NULL, configMAX_PRIORITIES - 1, NULL);
     return 200;

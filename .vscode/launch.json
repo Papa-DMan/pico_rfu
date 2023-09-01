@@ -11,9 +11,9 @@
             "request": "launch",
             "type": "cortex-debug",
             "runToEntryPoint": "main",
-            "servertype": "openocd",
-            //"servertype": "external",
-            //"gdbTarget": "localhost:50000",
+            //"servertype": "openocd",
+            "servertype": "external",
+            "gdbTarget": "localhost:50000",
             "device": "RP2040",
             "armToolchainPath": "/usr/bin",
             "configFiles": [
