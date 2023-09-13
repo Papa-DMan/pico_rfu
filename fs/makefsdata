@@ -21,6 +21,10 @@ while($file = <FILES>) {
     if($file =~ /(makefsdata)/) {
     	next;
     }
+    # Do not include ouput file
+    if($file =~ /(fsdata_custom.c)/) {
+    	next;
+    }
     
     chop($file);
     
