@@ -36,6 +36,23 @@ def decrypt_password(encrypted_password, private_key_path):
 
     return saltless_password
 
+
+conf = {
+    'num_dmx' : 1,
+    'num_sACN' : 0,
+    'hostname' : "rfunit",
+    'hostname_len' : 6,
+    'ssid' : "RemoteFocus",
+    'ssid_len' : 11,
+    'password' : "12345678",
+    'password_len' : 8,
+    'web_password' : "12345678",
+    'web_password_len' : 8,
+    'ap_mode' : True,
+    'encrypt' : False,
+    'checksum' : 111,
+}
+
 # Create an instance of the Flask application
 app = Flask(__name__)
 
@@ -60,11 +77,18 @@ def handle_keys():
 @app.route("/api/conf", methods=["POST"])
 def handle_conf():
     # Get the password from the request body
-    conf = request.json
-    print(conf)
+    inc_conf = request.json
+    print(inc_conf)
+    conf.update(inc_conf)
+    conf["ssid_len"] = len(conf["ssid"])
+    conf["password_len"] = len(conf["password"])
+    conf["web_password_len"] = len(conf["web_password"])
     return "Ok", 200
     
-
+@app.route("/api/conf", methods=["GET"])
+def get_conf():
+    # send the conf
+    return conf, 200
 
 # Define a route to serve static files from the "fs" folder
 @app.route("/<path:filename>")

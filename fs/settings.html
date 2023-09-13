@@ -12,29 +12,20 @@
   <body>
     <h1>Device Settings</h1>
     <form id="settings-form">
-      <label for="num_dmx">Number of DMX:</label>
-      <input type="number" id="num_dmx" min="0" max="32" required><br>
-
-      <label for="num_sACN">Number of sACN:</label>
-      <input type="number" id="num_sACN" min="0" max="63999" required><br>
-
       <label for="hostname">Hostname:</label>
-      <input type="text" id="hostname" minlength="1" maxlength="32" required><br>
+      <input type="text" id="hostname" minlength="3" maxlength="32" required><br>
 
-      <label for="ssid">SSID:</label>
+      <label for="ssid">WiFi Network Name:</label>
       <input type="text" id="ssid" minlength="8" maxlength="32" required><br>
 
-      <label for="password">Password:</label>
+      <label for="password">WiFi Password:</label>
       <input type="password" id="password" minlength="8" maxlength="64" required><br>
 
-      <label for="web_password">Web Password:</label>
+      <label for="web_password">Website Password:</label>
       <input type="password" id="web_password" minlength="8" maxlength="64" required><br>
 
-      <label for="ap_mode">AP Mode:</label>
+      <label for="ap_mode">Create own WiFi:</label>
       <input type="checkbox" id="ap_mode"><br>
-
-      <label for="encrypt">Encryption:</label>
-      <input type="checkbox" id="encrypt"><br>
 
       <button type="submit">Save Settings</button>
     </form>

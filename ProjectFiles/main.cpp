@@ -38,8 +38,6 @@
 // default config values
 static EEPROMClass eeprom;
 struct rfu_config_t {
-    uint8_t num_dmx = 1;
-    uint16_t num_sACN = 0;
     char hostname[32] = "rfunit";
     size_t hostname_len = 6;
     char ssid[32] = "RemoteFocus";
@@ -49,15 +47,12 @@ struct rfu_config_t {
     char web_password[64] = "12345678";
     size_t web_password_len = 8;
     bool ap_mode = true;
-    bool encrypt = false;
-    uint8_t checksum = 111;
+    uint8_t checksum = 110;
 };
 rfu_config_t rfu_config;
 
 uint8_t calcCheckSum(rfu_config_t data) {
     uint8_t checksum = 0;
-    checksum += data.num_dmx;
-    checksum += data.num_sACN;
     for (int i = 0; i < 32; i++) {
         checksum += data.hostname[i];
     }
@@ -75,7 +70,6 @@ uint8_t calcCheckSum(rfu_config_t data) {
     checksum += data.password_len;
     checksum += data.web_password_len;
     checksum += data.ap_mode;
-    checksum += data.encrypt;
     return checksum;
 }
 
@@ -242,29 +236,7 @@ void parseAPIKeysRequest(char* json, int json_len) {
  *
  */
 char* decryptPassword(char* password, size_t password_len) {
-    if (rfu_config.encrypt == false) {
-        return password;
-    } else {
-        uint8_t* result = new uint8_t[512];
-        size_t olen;
-        size_t decryptedPassword_len;
-        mbedtls_pk_init(&pk);
-        mbedtls_pem_init(&pem);
-        int readPem = mbedtls_pk_parse_key(&pk, private_key, sizeof(private_key), NULL, 0);
-        if (readPem != 0) {
-            return nullptr;
-        }
-        int status = mbedtls_pk_decrypt(&pk, (const unsigned char*)password, password_len, result, &olen, sizeof(result), nullptr, nullptr);
-        if (status != 0) {
-            return nullptr;
-        }
-        char* s = strstr((char*)result, "salt=");  // our request is salted so we need to reject non-salted requests
-        if (s == nullptr) {
-            return nullptr;
-        }
-        return (char*)result;
-    }
-    return nullptr;
+    return password;
 }
 
 /**
@@ -318,14 +290,6 @@ uint16_t parseAPIConfRequest(char* json, int json_len) {
     result = JSON_Validate(json, json_len);
     if (result != JSONSuccess)
         return 400;
-    result = JSON_Search(json, json_len, "num_dmx", 7, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    config.num_dmx = atoi(value);
-    result = JSON_Search(json, json_len, "num_sACN", 8, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    config.num_sACN = atoi(value);
     result = JSON_Search(json, json_len, "hostname", 8, &value, &value_len);
     if (result != JSONSuccess)
         return 400;
@@ -350,10 +314,6 @@ uint16_t parseAPIConfRequest(char* json, int json_len) {
     if (result != JSONSuccess)
         return 400;
     (strncmp(value, "true", value_len) == 0) ? config.ap_mode = true : config.ap_mode = false;
-    result = JSON_Search(json, json_len, "encrypt", 7, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    (strncmp(value, "true", value_len) == 0) ? config.encrypt = true : config.encrypt = false;
     config.checksum = calcCheckSum(config);
     memset(&rfu_config, 0, sizeof(rfu_config_t));
     memcpy(&rfu_config, &config, sizeof(rfu_config_t));
@@ -418,10 +378,11 @@ void httpd_post_finished(void* connection, char* response_uri, u16_t response_ur
 }
 
 void wifi_init_task(void*) {
-    if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)) {  // init wifi module with country code
-        // printf("CYW43 initalization failed\n");
+    if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)) {                  // init wifi module with country code
+        printf("CYW43 initalization failed, Reseting...\n");
+        AIRCR_Register = 0x5FA0004;
     }
-    cyw43_wifi_pm(&cyw43_state, 0xA11140);  // disable powersave mode
+    cyw43_wifi_pm(&cyw43_state, 0xA11140);                                   // disable powersave mode
     if (rfu_config.ap_mode) {
         cyw43_arch_enable_ap_mode(rfu_config.ssid, rfu_config.password, CYW43_AUTH_WPA2_AES_PSK);  // enable AP mode
 
@@ -436,28 +397,36 @@ void wifi_init_task(void*) {
         cyw43_arch_enable_sta_mode();                                                                  // enable STA mode
         cyw43_arch_wifi_connect_async(rfu_config.ssid, rfu_config.password, CYW43_AUTH_WPA2_AES_PSK);  // connect to AP
         printf("Connecting to %s\n", rfu_config.ssid);
-        while (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
-            printf("Status: %d\n", cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA));  // wait for connection
+        // wait for connection or timeout after 10 seconds
+        uint8_t timeout = 0;
+        while (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP && timeout < 30) {
+            printf("Status: %d\n", cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA));               // wait for connection
             vTaskDelay(1000);
+            timeout++;
         }
-        printf("\n");
-        printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));  // print IP address
-        netif_set_hostname(netif_default, "rfunit");                        // set hostname
-        dhcp_start(netif_default);                                          // start DHCP client
-        printf("dhcp started\n");
-        while (!dhcp_supplied_address(netif_default)) {  // wait for DHCP to finish
-            vTaskDelay(1000);
-            printf(".");
+        if (timeout >= 30) {
+            printf("Connection timed out, falling back to default config\n");
+            rfu_config.checksum++;                                                      // iterate checksum to force default config
+            xTaskCreate(write_config_task, "write_config_task", 1024, NULL, configMAX_PRIORITIES - 1, NULL);
+            vTaskDelete(NULL);
+        } else {
+            printf("\n");
+            printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));          // print IP address
+            netif_set_hostname(netif_default, rfu_config.hostname);                     // set hostname
+            dhcp_start(netif_default);                                                  // start DHCP client
+            printf("dhcp started\n");
+            while (!dhcp_supplied_address(netif_default)) {                             // wait for DHCP to finish
+                vTaskDelay(1000);
+                printf(".");
+            }
         }
     }
-    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));  // print IP address
-    // mdns_resp_init();
-    // mdns_resp_add_netif(netif_default, "rfunit");
+    printf("IP Address: %s\n", ip4addr_ntoa(&netif_default->ip_addr));                  // print IP address
 
-    dmxQueue = xQueueCreate(5, 512);  // create queue for DMX frames
-    dmx.begin(2 /*, 6*/);             // init DMX
+    dmxQueue = xQueueCreate(5, 512);                                                    // create queue for DMX frames
+    dmx.begin(2);                                                                       // init DMX on pin 2
 
-    xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);  // create task to listen for DMX frames
+    xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                                  // create task to listen for DMX frames
     httpd_init();
 
     vTaskDelete(NULL);
