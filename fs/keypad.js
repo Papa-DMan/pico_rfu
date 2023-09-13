@@ -98,10 +98,10 @@ function parseBuffer(buffer) {
   for (let i = 0; i < channels.length; i++) {
     if (level === "0") {
       console.log("deleting")
-      let success = channelData.delete(parseInt(channels[i]).toString());
+      let success = channelData.delete(parseInt(channels[i].padStart(3, '0')).toString());
       console.log(success);
     } else {
-      channelData.set(channels[i], level);
+      channelData.set(channels[i].padStart(3, '0'), level);
     }
   }
   channelData = new Map([...channelData.entries()].sort());
