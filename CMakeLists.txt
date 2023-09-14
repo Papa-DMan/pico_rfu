@@ -11,7 +11,6 @@ pico_sdk_init()
 
 include(${CMAKE_CURRENT_LIST_DIR}/./FreeRTOS/FreeRTOS-Kernel/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
 
-add_subdirectory(keys)
 add_subdirectory(FreeRTOS)
 add_subdirectory(DMX)
 add_subdirectory(EEPROM)
