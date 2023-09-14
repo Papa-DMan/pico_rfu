@@ -19,7 +19,6 @@ target_link_libraries(Pico_RFU
     FreeRTOS-Kernel-Heap4 
     DMX 
     coreJSON
-    encryption_keys
     pico_lwip_mbedtls
     pico_mbedtls
     EEPROM

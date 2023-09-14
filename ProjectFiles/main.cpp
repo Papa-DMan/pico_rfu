@@ -19,7 +19,6 @@
 #include "core_json.h"
 #include "dhcpserver.h"
 #include "dnsserver.h"
-#include "encryption_keys.h"
 #include "hardware/timer.h"
 #include "hardware/watchdog.h"
 #include "lwip/api.h"
