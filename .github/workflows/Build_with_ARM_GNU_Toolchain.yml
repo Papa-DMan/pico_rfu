@@ -1,0 +1,36 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: Build with ARM GNU Toolchain
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Out Repository
+        uses: actions/checkout@v2
+
+      - name: Set up ARM GNU Toolchain
+        run: |
+          sudo apt-get install -y gcc-arm-none-eabi
+        # You may need to adapt this depending on your GitHub runner's OS
+
+      - name: Build with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+        env:
+          CC: arm-none-eabi-gcc
+          CXX: arm-none-eabi-g++
+        # Customize the CMake and Make commands as needed
+
+      # Add more steps as needed, such as testing or deploying
+
