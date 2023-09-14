@@ -18,7 +18,7 @@ jobs:
 
       - name: Set up ARM GNU Toolchain
         run: |
-          sudo apt-get install -y gcc-arm-none-eabi
+          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential
         # You may need to adapt this depending on your GitHub runner's OS
 
       - name: Build with CMake
