@@ -7,7 +7,7 @@
 
 ## Step 1: Downloading the Firmware
 
-Visit the [Releases page](link-to-your-repo-releases) of this repository, and download the latest release.
+Visit the [Releases page](https://github.com/Papa-DMan/pico_rfu/releases) of this repository, and download the latest release.
 
 ## Step 2: Installing the Firmware
 
