@@ -30,8 +30,7 @@ jobs:
           cmake ..
           make
         env:
-          CC: arm-none-eabi-gcc
-          CXX: arm-none-eabi-g++
+          PICO_TOOLCHAIN_PATH: /usr/bin
         # Customize the CMake and Make commands as needed
 
       # Add more steps as needed, such as testing or deploying
