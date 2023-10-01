@@ -95,11 +95,11 @@ def get_conf():
 def serve_static(filename):
     if filename == "":
         filename = "index.html"
-        return send_from_directory("fs", filename)
+        return send_from_directory("fsgzip", filename + ".gz")
     elif filename == "public.pem":
         return send_from_directory("keys", filename)
     else:
-        return send_from_directory("fs", filename)
+        return send_from_directory("fsgzip", filename + ".gz")
 
 @app.route("/")
 def serve_index():
