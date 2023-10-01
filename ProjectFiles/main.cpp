@@ -46,7 +46,8 @@ struct rfu_config_t {
     char web_password[64] = "12345678";
     size_t web_password_len = 8;
     bool ap_mode = true;
-    uint8_t checksum = 110;
+    bool dmx_loop = true;
+    uint8_t checksum = 111;
 };
 rfu_config_t rfu_config;
 
@@ -69,6 +70,7 @@ uint8_t calcCheckSum(rfu_config_t data) {
     checksum += data.password_len;
     checksum += data.web_password_len;
     checksum += data.ap_mode;
+    checksum += data.dmx_loop;
     return checksum;
 }
 
@@ -102,8 +104,20 @@ static HTTPDREQ httpdreq = API;
 
 static DMX dmx;
 
+void dmx_loop(void *pvParameters) {
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    while (1) {
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(16));
+        if (dmx.busy()) {
+            continue;
+        }
+        dmx.sendDMX();
+    }
+}
+
 void dmx_task(void* pvParameters) {
-    // xTaskCreate(dmx_loop, "dmx_loop", 2048, NULL, 3, NULL);
+    if (rfu_config.dmx_loop)
+        xTaskCreate(dmx_loop, "dmx_loop", 2048, NULL, 3, NULL);
     uint8_t zero[512];
     memset(zero, 0, 512);
     xQueueSend(dmxQueue, zero, 0);
@@ -113,8 +127,11 @@ void dmx_task(void* pvParameters) {
         while (dmx.busy()) {
             vTaskDelay(1);
         }
+        dmx.forceBusy(true);
         dmx.unsafeWriteBuffer(data);
-        dmx.sendDMX();
+        dmx.forceBusy(false);
+        if (!rfu_config.dmx_loop)
+            dmx.sendDMX();
     }
 }
 
@@ -313,6 +330,10 @@ uint16_t parseAPIConfRequest(char* json, int json_len) {
     if (result != JSONSuccess)
         return 400;
     (strncmp(value, "true", value_len) == 0) ? config.ap_mode = true : config.ap_mode = false;
+    result = JSON_Search(json, json_len, "dmx_loop", 8, &value, &value_len);
+    if (result != JSONSuccess)
+        return 400;
+    (strncmp(value, "true", value_len) == 0) ? config.dmx_loop = true : config.dmx_loop = false;
     config.checksum = calcCheckSum(config);
     memset(&rfu_config, 0, sizeof(rfu_config_t));
     memcpy(&rfu_config, &config, sizeof(rfu_config_t));

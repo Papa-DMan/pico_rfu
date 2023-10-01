@@ -15,6 +15,7 @@ class DMX {
     void unasfeSetChannel(int channel, int value);
     void unsafeWriteBuffer(uint8_t *buffer, bool noStartCode = true);
     bool busy();
+    void forceBusy(bool busy) {this->data_update = busy;};
     uint getprgm_offsetp() {return dmxp->getprgm_offset();};
     //uint getprgm_offsetn() {return dmxn->getprgm_offset();};
     DmxOutput::return_code _pstatus;

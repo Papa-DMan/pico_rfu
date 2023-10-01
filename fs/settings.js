@@ -35,12 +35,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const password = document.getElementById("password").value;
         const web_password = document.getElementById("web_password").value;
         const ap_mode = document.getElementById("ap_mode").checked;
+        const dmx_loop = document.getElementById("dmx_loop").checked;
 
         // Send the data to your API endpoint using fetch or another AJAX method
         fetch(apiUrl + 'conf', { 
             method: 'POST',
             headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ hostname, ssid, password, web_password, ap_mode }) 
+            body: JSON.stringify({ hostname, ssid, password, web_password, ap_mode, dmx_loop }) 
         }).then(function (response) {
             if (response.ok) {
                 setTimeout(function () {
