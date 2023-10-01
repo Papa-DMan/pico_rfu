@@ -1,0 +1,165 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.container a {
+  text-decoration: none;
+  color: white;
+  padding: 10px 20px;
+  background-color: #0056b3;
+  margin-bottom: 10px;
+}
+
+.container select {
+  font-size: 20px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
+.display {
+  width: 80%;
+  max-width: 300px;
+  height: 50px;
+  border: 1px solid black;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 24px;
+  background-color: #f2f2f2;
+}
+
+.keypad-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  outline: 1px solid black;
+  padding: 10px;
+  margin-right: 10px;
+  column-gap: 5px; /* Add spacing between the columns */
+}
+
+.keypad button,
+.macro-pad button {
+  width: 60px;
+  height: 60px;
+  font-size: 18px;
+  margin-bottom: 10px;
+  touch-action: manipulation;
+  background-color: #e6e6e6;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.keypad button:hover,
+.macro-pad button:hover {
+  background-color: #d9d9d9;
+}
+
+.macro-pad {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  outline: 1px solid black;
+  padding: 10px;
+  column-gap: 5px; /* Add spacing between the columns */
+}
+
+.channel-display {
+  border-collapse: collapse;
+}
+
+.channel-array {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.channel {
+  padding: 8px;
+}
+
+.channel p {
+  margin: 0;
+}
+
+/* Media queries */
+@media only screen and (max-width: 600px) {
+  .container {
+    margin-top: 20px;
+  }
+
+  .display {
+    width: 90%;
+    max-width: none;
+    font-size: 20px;
+  }
+
+  .keypad-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .keypad,
+  .macro-pad {
+    width: 90%;
+    max-width: none;
+    margin-right: 0;
+    column-gap: 4px; /* Add spacing between the columns */
+  }
+
+  .keypad button,
+  .macro-pad button {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  .macro-pad {
+    margin-top: 10px;
+  }
+}
+
+
+/* settings.css */
+.settings-page body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.settings-page h1 {
+  text-align: center;
+}
+
+.settings-page form {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.settings-page label, input {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.settings-page button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+.settings-page button:hover {
+  background-color: #0056b3;
+}
