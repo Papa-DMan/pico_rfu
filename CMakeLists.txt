@@ -5,7 +5,7 @@ set(MAKE_EXPORT_COMPILE_COMMANDS 1)
 
 include(pico_sdk_import.cmake)
 
-project(ETC-Pico)
+project(RFU-Pico)
 
 pico_sdk_init()
 
@@ -15,3 +15,4 @@ add_subdirectory(FreeRTOS)
 add_subdirectory(DMX)
 add_subdirectory(EEPROM)
 add_subdirectory(ProjectFiles)
+add_subdirectory(bootloader)

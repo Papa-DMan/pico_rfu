@@ -3,19 +3,20 @@
 #include "hardware/regs/rosc.h"
 #include "hardware/regs/addressmap.h"
 #include "hardware/structs/rosc.h"
-#include "hardware/structs/flash.h"
+#include "hardware/flash.h"
 #include "pico/cyw43_arch.h"
 
-// Bootloader size is 16KB
-// Bootloader is 0x00000000 - 0x00003FFF
-#define BOOTLOADER_SIZE 0x4000
-#define FIRMWARE_START 0x00004000
-// adjust this to the entry of your firmware and make sure to build firmware with this entry point address
-#define FIRMWARE_ENTRY 0x00004000 
+// Bootloader size is 128KB
+// Bootloader is 0x10000000 - 0x10002FFFF
+#define BOOTLOADER_SIZE 0x00020000
+#define FIRMWARE_START 0x10020000
 //flash is 2MB
-#define FIRMWARE_END 0x200000
+#define FIRMWARE_END 0x10200000
 
-bool validate_firmware(uint32_t* firmware_start, uint32_t* firmware_end) {
+#define WIFI_FIRMWARE_START 0x10200000
+#define WIFI_FIRMWARE_END 0x10240000
+
+bool validate_firmware(uint32_t firmware_start, uint32_t firmware_end) {
     return true;
 }
 
@@ -30,46 +31,59 @@ int main() {
         if (valid) {
             //disable interrupts
             asm volatile("cpsid i");
+
             //disable cache
-            asm volatile("mrs r0, SCTLR");
-            asm volatile("bic r0, r0, #0x4");
-            asm volatile("msr SCTLR, r0");
+            asm volatile("ldr r0, =0x0C000000");
+            asm volatile("mov r1, #0x1000");
+            asm volatile("str r1, [r0]");
+
             //disable mmu
-            asm volatile("mrs r0, SCTLR");
-            asm volatile("bic r0, r0, #0x1");
-            asm volatile("msr SCTLR, r0");
+            asm volatile("ldr r0, =0x0C000000");
+            asm volatile("mov r1, #0x1");
+            asm volatile("str r1, [r0]");
+
             //disable branch prediction
-            asm volatile("mrs r0, SCTLR");
-            asm volatile("bic r0, r0, #0x1000");
-            asm volatile("msr SCTLR, r0");
+            asm volatile("ldr r0, =0x0C000000");
+            asm volatile("mov r1, #0x8000");
+            asm volatile("str r1, [r0, #4]");
+
             //flush data cache
             asm volatile("mov r0, #0");
-            asm volatile("mcr p15, 0, r0, c7, c10, 0");
+            asm volatile("ldr r1, =0x0E0000F0");
+            asm volatile("str r0, [r1]");
+
             //flush instruction cache
             asm volatile("mov r0, #0");
-            asm volatile("mcr p15, 0, r0, c7, c5, 0");
+            asm volatile("ldr r1, =0x0E0000F8");
+            asm volatile("str r0, [r1]");
+
             //flush branch target cache
             asm volatile("mov r0, #0");
-            asm volatile("mcr p15, 0, r0, c7, c5, 6");
+            asm volatile("ldr r1, =0x0E0000F4");
+            asm volatile("str r0, [r1]");
+
             //flush prefetch buffer
             asm volatile("mov r0, #0");
-            asm volatile("mcr p15, 0, r0, c7, c5, 4");
+            asm volatile("ldr r1, =0x0E0000FC");
+            asm volatile("str r0, [r1]");
+
             //flush TLB
             asm volatile("mov r0, #0");
-            asm volatile("mcr p15, 0, r0, c8, c7, 0");
+            asm volatile("ldr r1, =0xE000ED9C");
+            asm volatile("str r0, [r1]");
 
             // set VTOR to 
             asm volatile("ldr r0, =FIRMWARE_START + 0x100");
-            // right shift by 8
-            
-            asm volatile("ldr r0, =0xE000ED08");
+            asm volatile("mov r1, #8");
+            asm volatile("lsr r0, r0, r1");
+            asm volatile("ldr r1, =0xE000ED08");
+            asm volatile("str r0, [r1]");
 
             // set stack pointer
-            asm volatile("ldr r1, [r0]");
-            asm volatile("mov sp, r1");
+            asm volatile("ldr r0, [r0, #4]");
+            asm volatile("mov sp, r0");
 
-            // load to r1, r0 + 4
-            asm volatile("inc r0 #4");
+            // jump to firmware
             asm volatile("bx r0");
         }
         else {

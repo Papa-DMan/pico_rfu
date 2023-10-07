@@ -22,6 +22,9 @@ target_link_libraries(Pico_RFU
     pico_mbedtls
     EEPROM
 )
+
+set_target_properties(Pico_RFU PROPERTIES PICO_TARGET_LINKER_SCRIPT
+    ${CMAKE_CURRENT_SOURCE_DIR}/memmap_ota.ld)
 # build dhcpserver/dhcpserver.c as a component of the target
 target_sources(Pico_RFU PRIVATE 
     dhcpserver/dhcpserver.c
