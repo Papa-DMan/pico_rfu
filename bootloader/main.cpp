@@ -28,8 +28,49 @@ int main() {
         // Firmware is valid, jump to it
         bool valid = validate_firmware(firmware_start, firmware_end);
         if (valid) {
-            uint32_t* firmware_entry = (uint32_t*)FIRMWARE_START;
-            asm volatile("mov pc, %0" : : "r" (firmware_entry));
+            //disable interrupts
+            asm volatile("cpsid i");
+            //disable cache
+            asm volatile("mrs r0, SCTLR");
+            asm volatile("bic r0, r0, #0x4");
+            asm volatile("msr SCTLR, r0");
+            //disable mmu
+            asm volatile("mrs r0, SCTLR");
+            asm volatile("bic r0, r0, #0x1");
+            asm volatile("msr SCTLR, r0");
+            //disable branch prediction
+            asm volatile("mrs r0, SCTLR");
+            asm volatile("bic r0, r0, #0x1000");
+            asm volatile("msr SCTLR, r0");
+            //flush data cache
+            asm volatile("mov r0, #0");
+            asm volatile("mcr p15, 0, r0, c7, c10, 0");
+            //flush instruction cache
+            asm volatile("mov r0, #0");
+            asm volatile("mcr p15, 0, r0, c7, c5, 0");
+            //flush branch target cache
+            asm volatile("mov r0, #0");
+            asm volatile("mcr p15, 0, r0, c7, c5, 6");
+            //flush prefetch buffer
+            asm volatile("mov r0, #0");
+            asm volatile("mcr p15, 0, r0, c7, c5, 4");
+            //flush TLB
+            asm volatile("mov r0, #0");
+            asm volatile("mcr p15, 0, r0, c8, c7, 0");
+
+            // set VTOR to 
+            asm volatile("ldr r0, =FIRMWARE_START + 0x100");
+            // right shift by 8
+            
+            asm volatile("ldr r0, =0xE000ED08");
+
+            // set stack pointer
+            asm volatile("ldr r1, [r0]");
+            asm volatile("mov sp, r1");
+
+            // load to r1, r0 + 4
+            asm volatile("inc r0 #4");
+            asm volatile("bx r0");
         }
         else {
             // Firmware is invalid, start OTA app

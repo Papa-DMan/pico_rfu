@@ -24,7 +24,8 @@
         "unordered_map": "cpp",
         "vector": "cpp",
         "string_view": "cpp",
-        "initializer_list": "cpp"
+        "initializer_list": "cpp",
+        "cyw43.h": "c"
     },
     "cmake.additionalCompilerSearchDirs": [
         "/Applications/ArmGNUToolchain/12.2.mpacbti-rel1/arm-none-eabi"
