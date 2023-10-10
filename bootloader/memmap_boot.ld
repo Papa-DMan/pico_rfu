@@ -27,7 +27,7 @@ MEMORY
     RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 256k
     SCRATCH_X(rwx) : ORIGIN = 0x20040000, LENGTH = 4k
     SCRATCH_Y(rwx) : ORIGIN = 0x20041000, LENGTH = 4k
-    FIRMWARE(rx) : ORIGIN = 0x10020000, LENGTH = 224190
+    FIRMWARE(rx) : ORIGIN = 0x10020000, LENGTH = 225240
 }
 
 ENTRY(_entry_point)
@@ -125,9 +125,8 @@ SECTIONS
     .data : {
         __data_start__ = .;
         *(vtable)
-
         *(.time_critical*)
-
+        *(EXCLUDE_FILE (*firmware_data.obj) .text EXCLUDE_FILE (*firmware_data.obj) .data)
         /* remaining .text and .rodata; i.e. stuff we exclude above because we want it in RAM */
         *(.text*)
         . = ALIGN(4);
@@ -250,9 +249,10 @@ SECTIONS
     /* todo assert on extra code */
 
     .FIRMWARE : {
-        __firmware_start__ = .;
+        . = ALIGN(4);
+        __firmware_start = .;
         KEEP(*(.firmware))
-        __firmware_end__ = .;
+        __firmware_end = .;
     } > FIRMWARE
 }
 
