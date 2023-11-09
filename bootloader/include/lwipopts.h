@@ -6,7 +6,7 @@
 //
 // This example uses a common include to avoid repetition
 
-#define NO_SYS 1
+//#define NO_SYS 1
 //#define LWIP_SOCKET 1
 //#define LWIP_IGMP 1
 //#define PICO_CYW43_ARCH_FREERTOS 1

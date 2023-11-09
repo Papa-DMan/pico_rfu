@@ -1,30 +1,70 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/flash.h"
-//#include "hardware/regs/rosc.h"
-//#include "hardware/regs/addressmap.h"
 #include "hardware/structs/rosc.h"
-#include "hardware/flash.h"
-//#include "pico/cyw43_arch.h"
 
-// Bootloader size is 128KB
-// Bootloader is 0x10000000 - 0x10002FFFF
-//#define BOOTLOADER_SIZE 0x00020000
-//#define FIRMWARE_START 0x10056BBE
-//flash is 2MB
+#include "pico/cyw43_arch.h"
+
+#include "tcpserver.h"
+#include "dhcpserver.h"
+#include "dnsserver.h"
+
 #define FIRMWARE_END 0x10200000
 
 #define WIFI_FIRMWARE_START 0x10020000
 #define WIFI_FIRMWARE_END 0x10056FD8
 
 bool validate_firmware(uint32_t firmware_start, uint32_t firmware_end) {
-    return true;
+    return (firmware_start - firmware_end > 0);
+
+}
+
+void ota_app_init(TCP_SERVER_T* state, dhcp_server_t* dhcp_server, dns_server_t* dns_server) {
+    if (cyw43_arch_init()) {
+        DEBUG_printf("Failed to initialize CYW4343\n");
+        return;
+    }
+
+    state->context = cyw43_arch_async_context();
+    const char *ap_name = "RFU_OTA";
+    const char *password = "";
+
+    cyw43_arch_enable_ap_mode(ap_name, password, CYW43_AUTH_WPA2_AES_PSK);
+
+    ip4_addr_t mask;
+    IP4_ADDR(ip_2_ip4(&state->gw), 192, 168, 4, 1);
+    IP4_ADDR(ip_2_ip4(&mask), 255, 255, 255, 0);
+
+    dhcp_server_init(dhcp_server, &state->gw, &mask);
+
+    dns_server_init(dns_server, &state->gw);
+
+    if (!tcp_server_open(state, ap_name)) {
+        DEBUG_printf("failed to open server\n");
+        return;
+    }
+
+    state->complete = false;
+}
+
+void ota_app_work(TCP_SERVER_T* state) {
+    while (!state->complete) {
+        //tcp_server_poll(state);           //Only use this if using the pulling architecture
+        sleep_ms(100);
+    }
+}
+
+void ota_app_deinit(TCP_SERVER_T* state, dns_server_t* dns_server, dhcp_server_t* dhcp_server) {
+    tcp_server_close(state);
+    dns_server_deinit(dns_server);
+    dhcp_server_deinit(dhcp_server);
+    cyw43_arch_deinit();
+    free(state);
 }
 
 
 int main() {
     stdio_usb_init();
-    sleep_ms(10000);
     // Validate firmware
     uint32_t firmware_start = *(uint32_t*)0x10056FD8;
     uint32_t firmware_end = *(uint32_t*)0x10200000;
@@ -92,6 +132,19 @@ int main() {
         else {
             // Firmware is invalid, start OTA app
             printf("Firmware is invalid\n");
+            TCP_SERVER_T *state = (TCP_SERVER_T *)malloc(sizeof(TCP_SERVER_T));
+            memset(state, 0, sizeof(TCP_SERVER_T));
+            if (!state) {
+                DEBUG_printf("Failed to allocate TCP server state\n");
+                return 1;
+            }
+            dhcp_server_t dhcp_server;
+            dns_server_t dns_server;
+            ota_app_init(state, &dhcp_server, &dns_server);
+            while (true) {
+                ota_app_work(state);
+            }
+            ota_app_deinit(state, &dns_server, &dhcp_server);
             return 0;
         }
     }

@@ -1,40 +1,30 @@
 #ifndef _LWIPOPTS_EXAMPLE_COMMONH_H
 #define _LWIPOPTS_EXAMPLE_COMMONH_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
-
-// Critical section protection
-extern void noInterrupts();
-extern void interrupts();
-#define SYS_ARCH_DECL_PROTECT int
-#define SYS_ARCH_PROTECT(lev) noInterrupts
-#define SYS_ARCH_UNPROTECT(lev) interrupts
-
-extern unsigned long get_rand_32(void);
-#define LWIP_RAND() get_rand_32()
 
 // Common settings used in most of the pico_w examples
 // (see https://www.nongnu.org/lwip/2_1_x/group__lwip__opts.html for details)
 
+// allow override in some examples
 #ifndef NO_SYS
 #define NO_SYS                      1
 #endif
+// allow override in some examples
 #ifndef LWIP_SOCKET
 #define LWIP_SOCKET                 0
 #endif
+#if PICO_CYW43_ARCH_POLL
+#define MEM_LIBC_MALLOC             1
+#else
+// MEM_LIBC_MALLOC is incompatible with non polling versions
 #define MEM_LIBC_MALLOC             0
-#ifndef LWIP_PROVIDE_ERRNO
-#define LWIP_PROVIDE_ERRNO          1
 #endif
-
 #define MEM_ALIGNMENT               4
-#define MEM_SIZE                    16384
+#define MEM_SIZE                    4000
 #define MEMP_NUM_TCP_SEG            32
 #define MEMP_NUM_ARP_QUEUE          10
 #define PBUF_POOL_SIZE              24
-#define LWIP_ARP                    2
+#define LWIP_ARP                    1
 #define LWIP_ETHERNET               1
 #define LWIP_ICMP                   1
 #define LWIP_RAW                    1
@@ -45,7 +35,7 @@ extern unsigned long get_rand_32(void);
 #define LWIP_NETIF_STATUS_CALLBACK  1
 #define LWIP_NETIF_LINK_CALLBACK    1
 #define LWIP_NETIF_HOSTNAME         1
-#define LWIP_NETCONN                1
+#define LWIP_NETCONN                0
 #define MEM_STATS                   0
 #define SYS_STATS                   0
 #define MEMP_STATS                  0
@@ -61,20 +51,6 @@ extern unsigned long get_rand_32(void);
 #define LWIP_NETIF_TX_SINGLE_PBUF   1
 #define DHCP_DOES_ARP_CHECK         0
 #define LWIP_DHCP_DOES_ACD_CHECK    0
-
-// See #1285
-#define MEMP_NUM_UDP_PCB            6
-
-#if LWIP_IPV6
-#define LWIP_IPV6_DHCP6             1
-#endif
-
-// NTP
-extern void __setSystemTime(unsigned long long sec, unsigned long us);
-#define SNTP_SET_SYSTEM_TIME_US(sec, us)  __setSystemTime(sec, us)
-#define SNTP_MAX_SERVERS                  2
-//#define SNTP_SERVER_ADDRESS               "pool.ntp.org"
-#define SNTP_SERVER_DNS                   1
 
 #ifndef NDEBUG
 #define LWIP_DEBUG                  1
@@ -110,10 +86,5 @@ extern void __setSystemTime(unsigned long long sec, unsigned long us);
 #define PPP_DEBUG                   LWIP_DBG_OFF
 #define SLIP_DEBUG                  LWIP_DBG_OFF
 #define DHCP_DEBUG                  LWIP_DBG_OFF
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus
-
 
 #endif /* __LWIPOPTS_H__ */
