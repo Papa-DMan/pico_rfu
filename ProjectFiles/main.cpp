@@ -174,6 +174,7 @@ void processKeys(char* keys, size_t keysLength) {
     bool isTHRU = false;
     uint8_t dmxFrame[512];
     memset(dmxFrame, 0, 512);
+    dmx.getshadowbuff(dmxFrame);
 
     token = strtok(keys, " ");
     while (token != nullptr) {
@@ -182,6 +183,8 @@ void processKeys(char* keys, size_t keysLength) {
     }
     for (const auto& t : tokens) {
         if (strncmp(t, "release", 7) == 0) {
+            memset(dmxFrame, 0, 512);
+            captured.clear();
             break;
         } else if (strncmp(t, "AND", 3) == 0) {
             continue;

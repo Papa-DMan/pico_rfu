@@ -17,6 +17,7 @@ class DMX {
     bool busy();
     void forceBusy(bool busy) {this->data_update = busy;};
     uint getprgm_offsetp() {return dmxp->getprgm_offset();};
+    void getshadowbuff(uint8_t *buffer) {for (int i = 1; i < 513; i++) buffer[i] = dmxData[i];};
     //uint getprgm_offsetn() {return dmxn->getprgm_offset();};
     DmxOutput::return_code _pstatus;
     //DmxOutput::return_code _nstatus;
