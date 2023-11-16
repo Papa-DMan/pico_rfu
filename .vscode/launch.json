@@ -30,5 +30,57 @@
                 "samplesPerSecond": 4
             }
         },
+        {
+            "name": "Pico Debug - Bootloader",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/bootloader/Pico_OTA_Bootloader.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            //"servertype": "openocd",
+            "servertype": "external",
+            "gdbTarget": "localhost:50000",
+            "device": "RP2040",
+            "armToolchainPath": "/usr/bin",
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/rp2040.cfg"
+            ],
+            "svdFile": "/mnt/c/Users/mahan/Documents/git/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
+            "postRestartCommands": [
+                "continue"
+            ],
+            "searchDir": ["/usr/share/openocd/scripts"],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
+        },
+        {
+            "name": "Pico Debug - Full Project",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/ProjectFiles/Pico_RFU_Full.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            //"servertype": "openocd",
+            "servertype": "external",
+            "gdbTarget": "localhost:50000",
+            "device": "RP2040",
+            "armToolchainPath": "/usr/bin",
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/rp2040.cfg"
+            ],
+            "svdFile": "/mnt/c/Users/mahan/Documents/git/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
+            "postRestartCommands": [
+                "continue"
+            ],
+            "searchDir": ["/usr/share/openocd/scripts"],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
+        },
     ]
 }
