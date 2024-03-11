@@ -25,7 +25,17 @@
             "intelliSenseMode": "gcc-arm",
             "cStandard": "c17",
             "cppStandard": "c++17"
-        }
+        },
+        {
+            "name": "CMake (DevContainer)",
+            "compileCommands": "./build/compile_commands.json",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compilerPath": "/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
+            "intelliSenseMode": "gcc-arm",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        },
+        
     ],
     "version": 4
 }

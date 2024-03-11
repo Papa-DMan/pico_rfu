@@ -29,9 +29,6 @@ void DMX::begin(int pinp/*, int pinn*/) {
 
 void DMX::sendDMX() {
     dmxp->write(dmxData, universeSize);
-    //dmxn->write(ndmxData, universeSize);
-    //enable both sm 0 and 1 on pio0 in sync (32 bit word bits 3:0) so for example 0b00000000000000000000000000001111
-    pio_enable_sm_mask_in_sync(pio0, 0b00000000000000000000000000000011);
 }
 
 bool DMX::busy() {

@@ -72,6 +72,10 @@ def handle_auth():
 def handle_keys():
     # Get the password from the request body
     keys = request.json.get("keys")
+    if keys is None:
+        return "No keys provided", 400
+    else:
+        print(keys)
     return "", 200
 
 @app.route("/api/conf", methods=["POST"])

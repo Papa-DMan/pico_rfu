@@ -26,34 +26,23 @@ function solo() {
     release();
   }
 }
-function soloPlus() {
-  //increase the value of the solo mode
+
+function soloChange(direction) {
   if (soloMode) {
-    let match = prevBuffer.match(/\d{3}/)
-    let tail = prevBuffer.slice(match.index + 3);
+    let match = prevBuffer.match(/\b(\d{3})(?=\s*AT)/)
     if (match) {
+      let tail = prevBuffer.slice(match.index + 3);
       keyBuffer = match[0] + " AT 0"
+      console.log("sending: " + keyBuffer)
       sendKeys();
-      let num = parseInt(match[0]) + 1;
+      let num = parseInt(match[0]) + (direction? 1 : -1);
       keyBuffer = num.toString() + tail;
+      console.log("sending: " + keyBuffer)
       sendKeys();
       keyBuffer = num.toString() + tail;
       updateDisplay();
-    }
-  }
-}
-function soloMinus() {
-  if (soloMode) {
-    let match = prevBuffer.match(/\d{3}/)
-    let tail = prevBuffer.slice(match.index + 3);
-    if (match) {
-      keyBuffer = match[0] + " AT 0"
-      sendKeys();
-      let num = parseInt(match[0]) - 1;
-      keyBuffer = num.toString() + tail;
-      sendKeys();
-      keyBuffer = num.toString() + tail;
-      updateDisplay();
+    } else {
+      console.log("no match");
     }
   }
 }
@@ -98,8 +87,8 @@ function parseBuffer(buffer) {
   for (let i = 0; i < channels.length; i++) {
     if (level === "0") {
       console.log("deleting")
-      let success = channelData.delete(parseInt(channels[i].padStart(3, '0')).toString());
-      console.log(success);
+      let success = channelData.delete(channels[i]);
+      console.log("delete: " + success);
     } else {
       channelData.set(channels[i].padStart(3, '0'), level);
     }

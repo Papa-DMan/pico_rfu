@@ -113,7 +113,7 @@ void DmxOutput::write(uint8_t *universe, uint length)
         pio_sm_exec(_pio, _sm, pio_encode_jmp(_prgm_offset));
 
     // Restart the PIO state machinge
-    //pio_sm_set_enabled(_pio, _sm, true);
+    pio_sm_set_enabled(_pio, _sm, true);
 
     // Start the DMA transfer
     dma_channel_transfer_from_buffer_now(_dma, universe, length);
