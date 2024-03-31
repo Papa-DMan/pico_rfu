@@ -25,7 +25,9 @@
         "vector": "cpp",
         "string_view": "cpp",
         "initializer_list": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "log.h": "c",
+        "device.h": "c"
     },
     "cmake.additionalCompilerSearchDirs": [
         "/Applications/ArmGNUToolchain/12.2.mpacbti-rel1/arm-none-eabi"

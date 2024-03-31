@@ -8,6 +8,7 @@ target_include_directories(Pico_RFU PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/dhcpserver
     ${CMAKE_CURRENT_SOURCE_DIR}/dnsserver
+    ${CMAKE_CURRENT_SOURCE_DIR}/mongoose
 )
 
 target_link_libraries(Pico_RFU 
@@ -18,16 +19,25 @@ target_link_libraries(Pico_RFU
     FreeRTOS-Kernel 
     FreeRTOS-Kernel-Heap4 
     DMX 
-    coreJSON
-    pico_lwip_mbedtls
-    pico_mbedtls
+#    coreJSON
+#    pico_lwip_mbedtls
+#    pico_mbedtls
     EEPROM
 )
 # build dhcpserver/dhcpserver.c as a component of the target
 target_sources(Pico_RFU PRIVATE 
     dhcpserver/dhcpserver.c
     dnsserver/dnsserver.c
+    mongoose/mongoose.c
 )
+
+add_compile_definitions(MG_ARCH=MG_ARCH_FREERTOS)
+add_compile_definitions(MG_ENABLE_LWIP=1)
+add_compile_definitions(MG_ENABLE_PACKED_FS=1)
+add_compile_definitions(NO_SYS=0)
+add_compile_definitions(LWIP_SOCKET=1)
+add_compile_definitions(MG_ENABLE_OPENSSL=1)
+add_compile_definitions(MG_OTA=MG_OTA_FLASH)
 
 # disable usb output, enable uart output
 
