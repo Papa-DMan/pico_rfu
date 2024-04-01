@@ -30,4 +30,5 @@
     "cmake.additionalCompilerSearchDirs": [
         "/Applications/ArmGNUToolchain/12.2.mpacbti-rel1/arm-none-eabi"
     ],
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-g++",
 }
