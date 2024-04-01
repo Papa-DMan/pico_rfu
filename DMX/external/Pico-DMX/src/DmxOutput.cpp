@@ -97,7 +97,7 @@ DmxOutput::return_code DmxOutput::begin(uint pin, uint prgm_offset, PIO pio ,boo
     return SUCCESS;
 }
 
-void DmxOutput::write(uint8_t *universe, uint length)
+void DmxOutput::write_dmx(uint8_t *universe, uint length)
 {
 
     // Temporarily disable the PIO state machine

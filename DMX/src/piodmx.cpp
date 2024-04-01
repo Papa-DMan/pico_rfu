@@ -28,7 +28,7 @@ void DMX::begin(int pinp/*, int pinn*/) {
 }
 
 void DMX::sendDMX() {
-    dmxp->write(dmxData, universeSize);
+    dmxp->write_dmx(dmxData, universeSize);
 }
 
 bool DMX::busy() {

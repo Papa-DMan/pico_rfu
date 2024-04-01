@@ -1,8 +1,9 @@
 #include <FreeRTOS.h>
-#include <mbedtls/pem.h>
-#include <mbedtls/pk.h>
-#include <mbedtls/rsa.h>
+//#include <mbedtls/pem.h>
+//#include <mbedtls/pk.h>
+//#include <mbedtls/rsa.h>
 #include <pico/rand.h>
+#include <pico/stdlib.h>
 #include <queue.h>
 #include <stdio.h>
 #include <task.h>
@@ -16,19 +17,11 @@
 #include <vector>
 
 #include "EEPROM.h"
-#include "core_json.h"
+//#include "core_json.h"
 #include "dhcpserver.h"
 #include "dnsserver.h"
-#include "hardware/timer.h"
-#include "hardware/watchdog.h"
-#include "lwip/api.h"
-#include "lwip/apps/fs.h"
-#include "lwip/apps/httpd.h"
-#include "lwip/apps/mdns.h"
-#include "lwip/ip4_addr.h"
-#include "lwip/opt.h"
-#include "lwip/tcpip.h"
-#include "http_state.h"
+#include "mongoose.h"
+#include "net.h"
 #include "pico/cyw43_arch.h"
 #include "pico/stdlib.h"
 #include "pico/util/datetime.h"
@@ -90,17 +83,6 @@ static dns_server_t dns;
 static QueueHandle_t tcpQueue = NULL;
 static QueueHandle_t dmxQueue = NULL;
 static std::set<uint16_t> captured;
-enum HTTPDREQ {
-    API,
-    APIKEYS,
-    APIAUTH,
-    APICONF
-};
-
-static mbedtls_pem_context pem;
-static mbedtls_pk_context pk;
-
-static HTTPDREQ httpdreq = API;
 
 static DMX dmx;
 
@@ -133,31 +115,6 @@ void dmx_task(void* pvParameters) {
         if (!rfu_config.dmx_loop)
             dmx.sendDMX();
     }
-}
-
-/**
- * @brief Callback function for the httpd server receiving a POST request
- * @post The httpdreq vairable is set to the appropriate value
- * @return ERR_OK if the request is valid, ERR_VAL otherwise
- */
-err_t httpd_post_begin(void* connection, const char* uri, const char* http_request, u16_t http_request_len, int content_len, char* response_uri, u16_t response_uri_len, u8_t* post_auto_wnd) {
-    if (strncmp(uri, "/api", 4) == 0) {
-        if (strncmp(uri, "/api/auth", 9) == 0) {
-            httpdreq = HTTPDREQ::APIAUTH;
-            return ERR_OK;
-        }
-        if (strncmp(uri, "/api/keys", 9) == 0) {
-            httpdreq = HTTPDREQ::APIKEYS;
-            return ERR_OK;
-        }
-        if (strncmp(uri, "/api/conf", 9) == 0) {
-            httpdreq = HTTPDREQ::APICONF;
-            return ERR_OK;
-        }
-        httpdreq = API;
-        return ERR_OK;
-    }
-    return ERR_VAL;
 }
 
 /**
@@ -228,62 +185,6 @@ void processKeys(char* keys, size_t keysLength) {
 }
 
 /**
- * @brief Parses/verifies the api/keys request and calls processKeys
- * @param json The json buffer to be parsed
- * @param json_len The length of the json buffer
- * @post The dmxQueue is populated with the DMX frame to be sent
- */
-void parseAPIKeysRequest(char* json, int json_len) {
-    char* value;
-    size_t value_len;
-    JSONStatus_t result;
-    result = JSON_Validate(json, json_len);
-    if (result != JSONSuccess)
-        return;
-    result = JSON_Search(json, json_len, "keys", 4, &value, &value_len);
-    if (result != JSONSuccess)
-        return;
-    processKeys(value, value_len);
-}
-
-/**
- * @brief Decrypts the password sent by the client
- * @param password The password buffer to be decrypted
- * @param password_len The length of the password buffer
- * @post the result buffer is populated with the decrypted password and needs to be freed by the caller
- * @return The decrypted password if the password is valid, nullptr otherwise
- *
- */
-char* decryptPassword(char* password, size_t password_len) {
-    return password;
-}
-
-/**
- *
- * @brief Parses/verifies the api/auth request and returns the appropriate response code
- * @param json The json buffer to be parsed
- * @param json_len The length of the json buffer
- * @return 200 if the password is correct, 400 otherwise
- *
- */
-uint16_t parseAPIAuthRequest(char* json, int json_len) {
-    char* value;
-    size_t value_len;
-    JSONStatus_t result;
-    result = JSON_Validate(json, json_len);
-    if (result != JSONSuccess)
-        return 400;
-    result = JSON_Search(json, json_len, "password", 8, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    char* passwd = decryptPassword(value, value_len);
-    if (strncmp(passwd, rfu_config.web_password, rfu_config.web_password_len) == 0) {
-        return 200;
-    }
-    return 400;
-}
-
-/**
  * @brief Writes the config to the EEPROM must be spawned with configMAX_PRIORITIES - 1 priority
  * @param pvParameters Unused
  * @post The config is written to the EEPROM
@@ -300,104 +201,14 @@ void write_config_task(void* pvParameters) {
     vTaskDelete(NULL);
 }
 
-uint16_t parseAPIConfRequest(char* json, int json_len) {
-    char* value;
-    size_t value_len;
-    JSONStatus_t result;
-    rfu_config_t config;
-    memset(&config, 0, sizeof(rfu_config_t));
-    result = JSON_Validate(json, json_len);
-    if (result != JSONSuccess)
-        return 400;
-    result = JSON_Search(json, json_len, "hostname", 8, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    strncpy(config.hostname, value, value_len);
-    config.hostname_len = value_len;
-    result = JSON_Search(json, json_len, "ssid", 4, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    strncpy(config.ssid, value, value_len);
-    config.ssid_len = value_len;
-    result = JSON_Search(json, json_len, "password", 8, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    strncpy(config.password, value, value_len);
-    config.password_len = value_len;
-    result = JSON_Search(json, json_len, "web_password", 12, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    strncpy(config.web_password, value, value_len);
-    config.web_password_len = value_len;
-    result = JSON_Search(json, json_len, "ap_mode", 7, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    (strncmp(value, "true", value_len) == 0) ? config.ap_mode = true : config.ap_mode = false;
-    result = JSON_Search(json, json_len, "dmx_loop", 8, &value, &value_len);
-    if (result != JSONSuccess)
-        return 400;
-    (strncmp(value, "true", value_len) == 0) ? config.dmx_loop = true : config.dmx_loop = false;
-    config.checksum = calcCheckSum(config);
-    memset(&rfu_config, 0, sizeof(rfu_config_t));
-    memcpy(&rfu_config, &config, sizeof(rfu_config_t));
-    xTaskCreate(write_config_task, "write_config_task", 1024, NULL, configMAX_PRIORITIES - 1, NULL);
-    return 200;
-}
+static struct mg_mgr mgr;
 
-/**
- * @brief Called when data is received from the client
- * @post The response header is written to the connection and the packed buffer is freed
- * @param connection The connection pointer to the client
- * @param p The packed buffer containing the data (NEEDS TO BE FREED)
- * @post The response header is written to the connection and the packed buffer is freed
- * @return ERR_OK
- */
-err_t httpd_post_receive_data(void* connection, struct pbuf* p) {
-    char* data = (char*)p->payload;
-    switch (httpdreq) {
-        case HTTPDREQ::APIAUTH: {
-            if (parseAPIAuthRequest(data, p->len) == 200) {
-                snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
-            } else {
-                snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 400 Bad Request");
-            }
-            break;
-        }
-        case HTTPDREQ::APIKEYS: {
-            parseAPIKeysRequest(data, p->len);
-            snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
-            break;
-        }
-        case HTTPDREQ::API: {
-            snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
-            break;
-        }
-        case HTTPDREQ::APICONF: {
-            if (parseAPIConfRequest(data, p->len) == 200) {
-                snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 200 OK");
-            } else {
-                snprintf(((http_state*)connection)->hdrs[0], ((http_state*)connection)->hdr_content_len[0], "HTTP/1.1 400 Bad Request");
-            }
-            break;
-        }
+void mongoose_task(void* pvParameters) {
+    mg_mgr_init(&mgr);
+    web_init(&mgr);
+    while(true) {
+        mg_mgr_poll(&mgr, 10);
     }
-    pbuf_free(p);
-    return ERR_OK;
-}
-
-/**
- * @brief Called when the client has finished sending data
- * @post The response header is written to the connection and the connection is closed
- * @param connection The connection pointer to the client
- * @param response_uri The buffer to write the response uri to
- * @param response_uri_len The length of the response uri buffer
- *
- */
-void httpd_post_finished(void* connection, char* response_uri, u16_t response_uri_len) {
-    http_state* hs = (http_state*)connection;
-    snprintf(hs->hdrs[1], hs->hdr_content_len[1], "Content-type: text/html");
-    snprintf(hs->hdrs[2], hs->hdr_content_len[2], "");
-    snprintf(response_uri, response_uri_len, "/index.html");
 }
 
 void wifi_init_task(void*) {
@@ -450,7 +261,7 @@ void wifi_init_task(void*) {
     dmx.begin(2);                                                                       // init DMX on pin 2
 
     xTaskCreate(dmx_task, "DMX", 1024, NULL, 2, NULL);                                  // create task to listen for DMX frames
-    httpd_init();
+    xTaskCreate(mongoose_task, "mongoose", 2048, NULL, 2, NULL);                         // create task for mongoose
 
     vTaskDelete(NULL);
 }

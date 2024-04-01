@@ -10,3 +10,6 @@
 	path = FreeRTOS/coreJSON
 	url = https://github.com/FreeRTOS/coreJSON.git
     tag = v3.2.0
+[submodule "mongoose"]
+	path = ProjectFiles/mongoose
+	url = https://github.com/cesanta/mongoose.git
